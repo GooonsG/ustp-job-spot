@@ -5,50 +5,51 @@ import { Card, CardContent } from '@/components/ui/card';
 import NavBar from '@/components/layout/NavBar';
 import Footer from '@/components/layout/Footer';
 import itlogo from '../image/ustpit.jpg';
+import uni from '../image/shades.jpg';
 
 const Index = () => {
   const [featuredMarketplaceItems] = useState([
     {
       id: 1,
-      title: "Calculus Textbook 10th Edition",
-      price: 450,
-      image: "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+      title: "Matrix sunglasses - Unlisex",
+      price: 36.69,
+      image: uni
     },
     {
       id: 2,
-      title: "Scientific Calculator FX-991EX",
-      price: 850,
-      image: "https://images.unsplash.com/photo-1564466809058-bf4114d55352?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+      title: "American Staffordshire Terrier FX-991EX",
+      price: 150.69,
+      image: "https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.15752-9/462559138_1272896083891707_1208583185716722979_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_eui2=AeFxs6z7CUJmwJPt7Va1g96Mxww_ZBxofO3HDD9kHGh87dgp1bB4lHyFeRyOhM9iIODoIE1JWrLP73dK_HJh5xMN&_nc_ohc=aRT0m4TS0SQQ7kNvwFGoHEi&_nc_oc=Adn5tM0RuJ9bipErk7x2gkgqqBuzMzSBdWGpCK3HNMxQ27yjVN73aVEpqFAoXA_6jwk&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&oh=03_Q7cD2AHHC_Ah28dpZAU1trEQCOELORJKX9FmA3wI1p5X-6NKng&oe=682F1439  "
     },
     {
       id: 3,
-      title: "Programming with Python Textbook",
-      price: 500,
-      image: "https://images.unsplash.com/photo-1553856622-d1b352e9a211?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+      title: "Roasted Pig Bundle (2 Whole Bembs)",
+      price: 96.69,
+      image: "https://scontent.fcgy2-1.fna.fbcdn.net/v/t1.15752-9/458770168_1060395554971973_7282637934674241599_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_eui2=AeG4JwiGIh_Cp8VoshvkeZyZ5L-b1zQ7gUrkv5vXNDuBSmG5lOHbxPjA1T4yPRE0AF2eTSfNRVbazvh_CT0WpU1i&_nc_ohc=F7aOnFy7TDQQ7kNvwHF_EiJ&_nc_oc=Adm8tioqZN5n_FNCA3G1N2KNC9L3l9-YUEelaNjykZ8ZtCebbgtSsZbX7Jaw5vjXK0c&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.fcgy2-1.fna&oh=03_Q7cD2AG8VrXWHz_GMjRdlS38uXnYm3ekmdSoBkOxfAOyJm6EJw&oe=682F0710"
     }
   ]);
   
   const [featuredJobs] = useState([
     {
       id: 1,
-      title: "Web Developer Intern",
-      company: "TechSolutions Inc.",
+      title: "Client Services Associate",
+      company: "3Js Computer Café.",
       type: "Internship",
       location: "Cagayan de Oro"
     },
     {
       id: 2,
-      title: "Marketing Assistant",
-      company: "Global Marketing PH",
+      title: "Customer Experience Specialist",
+      company: "Nanay`s Store",
       type: "Part-time",
-      location: "Remote"
+      location: "Lawesbra, Lapasan, Cagayan de Oro"
     },
     {
       id: 3,
-      title: "Research Assistant",
-      company: "USTP Research Department",
+      title: "Web System Assistant",
+      company: "USTP Tech Department",
       type: "On-campus",
-      location: "USTP Campus"
+      location: "USTP CDO Campus"
     }
   ]);
 

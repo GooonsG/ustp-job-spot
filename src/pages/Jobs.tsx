@@ -191,7 +191,7 @@ const Jobs = () => {
                 <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex flex-col md:flex-row">
                     <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start">
-                      <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                         <img 
                           src={job.logo} 
                           alt={job.company} 

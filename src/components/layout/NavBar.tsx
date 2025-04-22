@@ -13,6 +13,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import traillogo from '../../image/traillogo.png';
 import { useAuth } from '@/context/AuthProvider';
+import logo from '../../image/iconavatar.jpg';
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const NavBar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt={user.email || ""} />
+                      <AvatarImage src={logo} alt={user.email || ""} />
                       <AvatarFallback className="bg-ustp-blue text-white">{userInitials}</AvatarFallback>
                     </Avatar>
                   </Button>

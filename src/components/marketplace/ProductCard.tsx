@@ -44,9 +44,9 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
   return (
     <Card 
       className="overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-fade-in"
-      style={{ animationDelay: `${index * 100}ms` }}
+      style={{ animationDelay: `${index * 100}ms`, width: '100%', maxWidth: '350px' }}
     >
-      <div className="h-48 overflow-hidden group">
+      <div className="h-60 overflow-hidden group">
         <img 
           src={product.image} 
           alt={product.title} 

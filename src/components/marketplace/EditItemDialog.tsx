@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -19,6 +19,23 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   condition: z.string().min(1, "Condition is required"),
 });
+
+const categories = [
+  "Books",
+  "Electronics",
+  "Clothing",
+  "School Supplies",
+  "Furniture",
+  "Other",
+];
+
+const conditions = [
+  "New",
+  "Used - Like New",
+  "Used - Good",
+  "Used - Fair",
+  "Used - Poor",
+];
 
 interface EditItemDialogProps {
   open: boolean;
@@ -156,7 +173,18 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,7 +197,18 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
                 <FormItem>
                   <FormLabel>Condition</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {conditions.map((condition) => (
+                          <SelectItem key={condition} value={condition}>
+                            {condition}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
