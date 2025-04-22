@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import NavBar from '@/components/layout/NavBar';
@@ -38,7 +37,7 @@ const Marketplace = () => {
       if (error) throw error;
 
       const productsWithId = data.map((item) => ({
-        id: String(item.id), // Convert the ID to a string
+        id: String(item.id),
         title: item.title,
         description: item.description,
         price: item.price,
@@ -94,6 +93,10 @@ const Marketplace = () => {
     setPostItemOpen(true);
   };
 
+  const refreshProducts = () => {
+    fetchProducts();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -127,13 +130,13 @@ const Marketplace = () => {
               <p className="text-lg text-gray-600">Loading marketplace items...</p>
             </div>
           ) : (
-            <ProductsGrid products={filteredProducts} />
+            <ProductsGrid products={filteredProducts} onProductUpdate={refreshProducts} />
           )}
         </div>
       </main>
       <Footer />
       
-      <PostItemForm open={postItemOpen} onOpenChange={setPostItemOpen} />
+      <PostItemForm open={postItemOpen} onOpenChange={setPostItemOpen} onSuccess={refreshProducts} />
     </div>
   );
 };

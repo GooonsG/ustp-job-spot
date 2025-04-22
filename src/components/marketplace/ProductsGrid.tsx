@@ -4,14 +4,20 @@ import ProductCard from './ProductCard';
 
 interface ProductsGridProps {
   products: Product[];
+  onProductUpdate: () => void;
 }
 
-const ProductsGrid = ({ products }: ProductsGridProps) => {
+const ProductsGrid = ({ products, onProductUpdate }: ProductsGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.length > 0 ? (
         products.map((product, index) => (
-          <ProductCard key={product.id} product={product} index={index} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            index={index} 
+            onProductUpdate={onProductUpdate}
+          />
         ))
       ) : (
         <div className="col-span-3 text-center py-12 animate-fade-in">
