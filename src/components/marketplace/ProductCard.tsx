@@ -20,6 +20,8 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
   const { user } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
+  // Check if the user is the owner of the product
+  // If seller_id exists, use it, otherwise fallback to checking if not possible
   const isOwner = user?.id === product.seller_id;
 
   const handleDelete = async () => {

@@ -14,7 +14,7 @@ import { useState } from "react";
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  price: z.string().min(1, "Price is required").transform(Number),
+  price: z.coerce.number().min(0, "Price must be a positive number"), // Use coerce to convert string to number
   category: z.string().min(1, "Category is required"),
   condition: z.string().min(1, "Condition is required"),
 });
@@ -34,7 +34,7 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
     defaultValues: {
       title: product.title,
       description: product.description,
-      price: String(product.price),
+      price: product.price, // This is now properly handled as a number
       category: product.category,
       condition: product.condition,
     },

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import NavBar from '@/components/layout/NavBar';
@@ -40,8 +41,9 @@ const Marketplace = () => {
         id: String(item.id),
         title: item.title,
         description: item.description,
-        price: item.price,
+        price: item.price, // Already a number, no need for parseFloat
         seller: item.seller_name,
+        seller_id: item.seller_id, // Include seller_id
         category: item.category,
         condition: item.condition,
         image: item.image_url || "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
@@ -136,7 +138,11 @@ const Marketplace = () => {
       </main>
       <Footer />
       
-      <PostItemForm open={postItemOpen} onOpenChange={setPostItemOpen} onSuccess={refreshProducts} />
+      <PostItemForm 
+        open={postItemOpen} 
+        onOpenChange={setPostItemOpen} 
+        onSuccess={refreshProducts}
+      />
     </div>
   );
 };

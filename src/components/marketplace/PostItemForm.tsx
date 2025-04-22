@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthProvider';
@@ -15,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface PostItemFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const categories = [
@@ -34,7 +34,7 @@ const conditions = [
   'Used - Poor',
 ];
 
-const PostItemForm = ({ open, onOpenChange }: PostItemFormProps) => {
+const PostItemForm = ({ open, onOpenChange, onSuccess }: PostItemFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -128,8 +128,10 @@ const PostItemForm = ({ open, onOpenChange }: PostItemFormProps) => {
       setImage(null);
       setImagePreview(null);
       
-      // Reload the marketplace page to show the new item
-      window.location.reload();
+      // Call onSuccess if provided
+      if (onSuccess) {
+        onSuccess();
+      }
       
     } catch (error) {
       toast.error('Error posting item: ' + (error as Error).message);
