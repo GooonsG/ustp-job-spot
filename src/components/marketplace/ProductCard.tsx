@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types/marketplace';
@@ -19,6 +18,7 @@ interface ProductCardProps {
 const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
   const { user } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   // Check if the user is the owner of the product
   // If seller_id exists, use it, otherwise fallback to checking if not possible
@@ -46,7 +46,10 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
       className="overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-fade-in"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="h-48 overflow-hidden group">
+      <div 
+        className="h-48 overflow-hidden group cursor-pointer"
+        onClick={() => setDetailsDialogOpen(true)}
+      >
         <img 
           src={product.image} 
           alt={product.title} 
@@ -103,8 +106,8 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
         ) : (
           <Button 
             size="sm" 
-            className="bg-ustp
-            -blue text-white hover:bg-ustp-darkblue transition-colors duration-300"
+            className="bg-ustp-blue text-white hover:bg-ustp-darkblue transition-colors duration-300"
+            onClick={() => setDetailsDialogOpen(true)}
           >
             View Details
           </Button>
@@ -116,6 +119,12 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
         onOpenChange={setEditDialogOpen}
         product={product}
         onSuccess={onProductUpdate}
+      />
+
+      <ProductDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        product={product}
       />
     </Card>
   );
