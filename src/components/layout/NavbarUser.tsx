@@ -18,8 +18,12 @@ const NavbarUser = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    setIsOpen(false);
+    try {
+      await signOut();
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   if (!user) {

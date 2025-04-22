@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state changed:", event, session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -49,7 +51,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [toast]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log("Attempting to sign out...");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
+      console.log("Sign out successful");
+    } catch (error) {
+      console.error("Error in signOut function:", error);
+      throw error;
+    }
   };
 
   const value = {

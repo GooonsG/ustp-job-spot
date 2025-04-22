@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,36 +10,18 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import traillogo from '../../image/traillogo.png';
+import { useAuth } from '@/context/AuthProvider';
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-
-  useEffect(() => {
-    // Check current auth status
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-      setUserEmail(session?.user?.email ?? '');
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-      setUserEmail(session?.user?.email ?? '');
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate('/');
+      await signOut();
+      navigate('/auth');
       toast({
         title: "Success",
         description: "You have been logged out successfully.",
@@ -53,8 +35,8 @@ const NavBar = () => {
     }
   };
 
-  const userInitials = userEmail
-    ? userEmail.substring(0, 2).toUpperCase()
+  const userInitials = user?.email
+    ? user.email.substring(0, 2).toUpperCase()
     : 'US';
 
   return (
@@ -85,12 +67,12 @@ const NavBar = () => {
               </svg>
               Jobs
             </Link>
-            {isAuthenticated ? (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt={userEmail} />
+                      <AvatarImage src="/placeholder.svg" alt={user.email || ""} />
                       <AvatarFallback className="bg-ustp-blue text-white">{userInitials}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -100,7 +82,7 @@ const NavBar = () => {
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">Account</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {userEmail}
+                        {user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
