@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { UserCircle, LogOut, Settings } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const NavbarUser = () => {
   const { user, signOut } = useAuth();
@@ -21,8 +22,14 @@ const NavbarUser = () => {
     try {
       await signOut();
       setIsOpen(false);
+      // Auth state change listener will handle the UI update
     } catch (error) {
       console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+      });
     }
   };
 

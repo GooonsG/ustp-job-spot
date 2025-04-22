@@ -53,15 +53,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       console.log("Attempting to sign out...");
+      // This will clear any session regardless of its state
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Error signing out:", error);
-        throw error;
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to log out. Please try again.",
+        });
+      } else {
+        // We'll let the auth state change event handle updating the UI
+        console.log("Sign out successful");
       }
-      console.log("Sign out successful");
     } catch (error) {
       console.error("Error in signOut function:", error);
-      throw error;
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+      });
     }
   };
 
