@@ -73,7 +73,9 @@ export default {
           yellow: '#F9BF3B', 
           darkblue: '#1F1B4F',
           gray: '#F5F5F5',
-          lightgray: '#F9F9F9'
+          lightgray: '#F9F9F9',
+		  magenta: '#FF00FF',
+		  cyan	: '#00FFFF',
         }
       },
       borderRadius: {

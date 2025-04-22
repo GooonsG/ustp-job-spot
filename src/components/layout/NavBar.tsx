@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -21,7 +21,6 @@ const NavBar = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      // Navigation will be handled by the auth state change event
     } catch (error) {
       console.error("Error during logout:", error);
       toast({
@@ -52,18 +51,32 @@ const NavBar = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/marketplace" className="flex items-center text-gray-700 hover:text-ustp-blue transition-colors">
+            <NavLink 
+              to="/marketplace" 
+              className={({ isActive }) =>
+                `flex items-center transition-colors ${
+                  isActive ? 'text-ustp-magenta font-bold' : 'text-gray-700 hover:text-ustp-magenta'
+                }`
+              }
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               Marketplace
-            </Link>
-            <Link to="/jobs" className="flex items-center text-gray-700 hover:text-ustp-blue transition-colors">
+            </NavLink>
+            <NavLink 
+              to="/jobs" 
+              className={({ isActive }) =>
+                `flex items-center transition-colors ${
+                  isActive ? 'text-ustp-cyan font-bold' : 'text-gray-700 hover:text-ustp-cyan'
+                }`
+              }
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Jobs
-            </Link>
+            </NavLink>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

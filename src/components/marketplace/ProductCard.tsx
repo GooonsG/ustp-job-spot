@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types/marketplace';
@@ -7,6 +6,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { EditItemDialog } from './EditItemDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -19,9 +19,8 @@ interface ProductCardProps {
 const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
   const { user } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false); // State for View Details dialog
 
-  // Check if the user is the owner of the product
-  // If seller_id exists, use it, otherwise fallback to checking if not possible
   const isOwner = user?.id === product.seller_id;
 
   const handleDelete = async () => {
@@ -45,6 +44,7 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
     <Card 
       className="overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-fade-in"
       style={{ animationDelay: `${index * 100}ms`, width: '100%', maxWidth: '350px' }}
+      
     >
       <div className="h-60 overflow-hidden group">
         <img 
@@ -103,20 +103,49 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
         ) : (
           <Button 
             size="sm" 
-            className="bg-ustp
-            -blue text-white hover:bg-ustp-darkblue transition-colors duration-300"
+            className="bg-ustp-blue text-white hover:bg-ustp-magenta transition-colors duration-300"
+            onClick={() => setViewDetailsOpen(true)} // Open the View Details dialog
           >
             View Details
           </Button>
         )}
       </CardFooter>
 
+      {/* Edit Item Dialog */}
       <EditItemDialog 
         open={editDialogOpen} 
         onOpenChange={setEditDialogOpen}
         product={product}
         onSuccess={onProductUpdate}
       />
+      
+
+      {/* View Details Dialog */}
+      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{product.title}</DialogTitle>
+            <DialogDescription>
+              <p className="text-sm text-gray-600">{product.description}</p>
+              <div className="mt-4">
+                <img 
+                  src={product.image} 
+                  alt={product.title} 
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+              <div className="mt-4 flex justify-between text-sm">
+                <span className="bg-ustp-gray/50 px-2 py-1 rounded-full">{product.category}</span>
+                <span className="bg-ustp-gray/50 px-2 py-1 rounded-full">{product.condition}</span>
+              </div>
+              <div className="mt-4 text-sm text-gray-500">
+                <p>Price: ₱{product.price.toFixed(2)}</p>
+                <p>Posted by: {product.seller}</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

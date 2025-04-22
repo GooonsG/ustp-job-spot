@@ -137,8 +137,8 @@ const Jobs = () => {
       <main className="flex-grow bg-ustp-lightgray">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-ustp-blue mb-2">USTP Job Portal</h1>
-            <p className="text-gray-600">Find part-time jobs, internships, and freelance opportunities</p>
+            <h1 className="text-4xl font-bold text-ustp-darkblue mb-2">USTP Job Portal</h1>
+            <p className="text-gray-700">Find part-time jobs, internships, and freelance opportunities</p>
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
