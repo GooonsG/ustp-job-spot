@@ -9,7 +9,6 @@ import { EditItemDialog } from './EditItemDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ProductDetailsDialog } from './ProductDetailsDialog';
 
 interface ProductCardProps {
   product: Product;
@@ -20,7 +19,6 @@ interface ProductCardProps {
 const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
   const { user } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   // Check if the user is the owner of the product
   // If seller_id exists, use it, otherwise fallback to checking if not possible
@@ -48,10 +46,7 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
       className="overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-fade-in"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div 
-        className="h-48 overflow-hidden group cursor-pointer"
-        onClick={() => setDetailsDialogOpen(true)}
-      >
+      <div className="h-48 overflow-hidden group">
         <img 
           src={product.image} 
           alt={product.title} 
@@ -108,8 +103,8 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
         ) : (
           <Button 
             size="sm" 
-            className="bg-ustp-blue text-white hover:bg-ustp-darkblue transition-colors duration-300"
-            onClick={() => setDetailsDialogOpen(true)}
+            className="bg-ustp
+            -blue text-white hover:bg-ustp-darkblue transition-colors duration-300"
           >
             View Details
           </Button>
@@ -121,12 +116,6 @@ const ProductCard = ({ product, index, onProductUpdate }: ProductCardProps) => {
         onOpenChange={setEditDialogOpen}
         product={product}
         onSuccess={onProductUpdate}
-      />
-
-      <ProductDetailsDialog
-        open={detailsDialogOpen}
-        onOpenChange={setDetailsDialogOpen}
-        product={product}
       />
     </Card>
   );
