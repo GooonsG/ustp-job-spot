@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import NavBar from '@/components/layout/NavBar';
 import Footer from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/badge';
+import { PostJobDialog } from '@/components/jobs/PostJobDialog';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface Job {
   id: number;
@@ -96,9 +97,9 @@ const Jobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [jobType, setJobType] = useState('all');
   const [sortOption, setSortOption] = useState('latest');
+  const { isEmployer } = useUserRole();
 
   useEffect(() => {
-    // In a real app, this would be an API call
     setJobs(mockJobs);
     setFilteredJobs(mockJobs);
   }, []);
@@ -106,12 +107,10 @@ const Jobs = () => {
   useEffect(() => {
     let result = [...jobs];
     
-    // Apply job type filter
     if (jobType !== 'all') {
       result = result.filter(job => job.type.toLowerCase() === jobType.toLowerCase());
     }
     
-    // Apply search filter
     if (searchTerm) {
       result = result.filter(job => 
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -121,7 +120,6 @@ const Jobs = () => {
       );
     }
     
-    // Apply sorting
     if (sortOption === 'latest') {
       result.sort((a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
     } else if (sortOption === 'deadline') {
@@ -180,9 +178,7 @@ const Jobs = () => {
           </div>
           
           <div className="mb-4 flex justify-end">
-            <Button className="bg-ustp-yellow text-black hover:brightness-95">
-              + Post Job Opportunity
-            </Button>
+            {isEmployer && <PostJobDialog />}
           </div>
           
           <div className="space-y-4">

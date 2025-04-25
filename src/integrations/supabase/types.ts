@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      jobs: {
+        Row: {
+          company: string
+          deadline: string
+          description: string
+          employer_id: string
+          id: string
+          location: string
+          logo: string | null
+          posted_date: string | null
+          salary: string
+          tags: string[]
+          title: string
+          type: string
+        }
+        Insert: {
+          company: string
+          deadline: string
+          description: string
+          employer_id: string
+          id?: string
+          location: string
+          logo?: string | null
+          posted_date?: string | null
+          salary: string
+          tags?: string[]
+          title: string
+          type: string
+        }
+        Update: {
+          company?: string
+          deadline?: string
+          description?: string
+          employer_id?: string
+          id?: string
+          location?: string
+          logo?: string | null
+          posted_date?: string | null
+          salary?: string
+          tags?: string[]
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       marketplace_items: {
         Row: {
           category: string
@@ -89,6 +134,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -97,7 +166,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "student" | "employer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -212,6 +281,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["student", "employer"],
+    },
   },
 } as const
