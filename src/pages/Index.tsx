@@ -63,7 +63,7 @@ const Index = () => {
                     </Button>
                   </Link>
                   <Link to="/jobs">
-                    <Button variant="secondary" className="modern-button-secondary">
+                    <Button variant="secondary" className="modern-button-secondary rounded-xl">
                       Browse Jobs
                     </Button>
                   </Link>
