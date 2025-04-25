@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { PostJobDialog } from '@/components/jobs/PostJobDialog';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-
 interface Job {
   id: string;
   title: string;
@@ -23,84 +22,62 @@ interface Job {
   logo: string;
   tags: string[];
 }
-
 const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [jobType, setJobType] = useState('all');
   const [sortOption, setSortOption] = useState('latest');
-  const { isEmployer } = useUserRole();
-
+  const {
+    isEmployer
+  } = useUserRole();
   useEffect(() => {
     fetchJobs();
     subscribeToJobs();
   }, []);
-
   const fetchJobs = async () => {
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .order('posted_date', { ascending: false });
-
+    const {
+      data,
+      error
+    } = await supabase.from('jobs').select('*').order('posted_date', {
+      ascending: false
+    });
     if (error) {
       console.error('Error fetching jobs:', error);
       return;
     }
-
     setJobs(data || []);
     setFilteredJobs(data || []);
   };
-
   const subscribeToJobs = () => {
-    const channel = supabase
-      .channel('jobs-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'jobs'
-        },
-        (payload) => {
-          console.log('Change received!', payload);
-          fetchJobs(); // Refresh the jobs list
-        }
-      )
-      .subscribe();
-
+    const channel = supabase.channel('jobs-changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'jobs'
+    }, payload => {
+      console.log('Change received!', payload);
+      fetchJobs(); // Refresh the jobs list
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
   };
-
   useEffect(() => {
     let result = [...jobs];
-    
     if (jobType !== 'all') {
       result = result.filter(job => job.type.toLowerCase() === jobType.toLowerCase());
     }
-    
     if (searchTerm) {
-      result = result.filter(job => 
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+      result = result.filter(job => job.title.toLowerCase().includes(searchTerm.toLowerCase()) || job.company.toLowerCase().includes(searchTerm.toLowerCase()) || job.description.toLowerCase().includes(searchTerm.toLowerCase()) || job.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     }
-    
     if (sortOption === 'latest') {
       result.sort((a, b) => new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime());
     } else if (sortOption === 'deadline') {
       result.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
     }
-    
     setFilteredJobs(result);
   }, [jobs, searchTerm, jobType, sortOption]);
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <NavBar />
       <main className="flex-grow bg-ustp-lightgray">
         <div className="container mx-auto px-4 py-8">
@@ -112,12 +89,7 @@ const Jobs = () => {
           <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Input
-                  placeholder="Search jobs, companies, or skills..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
+                <Input placeholder="Search jobs, companies, or skills..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full" />
               </div>
               <div>
                 <Select value={jobType} onValueChange={setJobType}>
@@ -152,20 +124,13 @@ const Jobs = () => {
           </div>
           
           <div className="space-y-4">
-            {filteredJobs.length > 0 ? (
-              filteredJobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow">
+            {filteredJobs.length > 0 ? filteredJobs.map(job => <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex flex-col md:flex-row">
                     <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start">
                       <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                        <img 
-                          src={job.logo} 
-                          alt={job.company} 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/placeholder.svg";
-                          }}
-                        />
+                        <img src={job.logo} alt={job.company} onError={e => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }} className="w-full h-full object-cover object-center" />
                       </div>
                     </div>
                     <div className="md:w-3/4">
@@ -183,11 +148,9 @@ const Jobs = () => {
                       <CardContent className="p-4 pt-0">
                         <p className="text-sm text-gray-600 line-clamp-2 mb-3">{job.description}</p>
                         <div className="flex flex-wrap gap-2">
-                          {job.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="bg-ustp-lightgray text-gray-700">
+                          {job.tags.map((tag, index) => <Badge key={index} variant="outline" className="bg-ustp-lightgray text-gray-700">
                               {tag}
-                            </Badge>
-                          ))}
+                            </Badge>)}
                         </div>
                       </CardContent>
                       <CardFooter className="p-4 pt-0 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
@@ -204,20 +167,14 @@ const Jobs = () => {
                       </CardFooter>
                     </div>
                   </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                </Card>) : <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-600">No jobs found</h3>
                 <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Jobs;
