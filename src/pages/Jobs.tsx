@@ -130,7 +130,7 @@ const Jobs = () => {
                       <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                         <img src={job.logo} alt={job.company} onError={e => {
                     (e.target as HTMLImageElement).src = "/placeholder.svg";
-                  }} className="w-full h-full object-center" />
+                  }} className="w-full h-full object-cover" />
                       </div>
                     </div>
                     <div className="md:w-3/4">
