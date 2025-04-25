@@ -3,10 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthProvider";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import EmployerRoute from "@/components/auth/EmployerRoute";
 
 // Pages
 import Index from "./pages/Index";
@@ -15,6 +13,7 @@ import Marketplace from "./pages/Marketplace";
 import Jobs from "./pages/Jobs";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +25,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
             <Route
               path="/"
               element={
@@ -38,9 +36,17 @@ const App = () => (
             <Route
               path="/dashboard"
               element={
-                <EmployerRoute>
+                <ProtectedRoute>
                   <Dashboard />
-                </EmployerRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/marketplace"
+              element={
+                <ProtectedRoute>
+                  <Marketplace />
+                </ProtectedRoute>
               }
             />
             <Route
@@ -51,14 +57,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/marketplace"
-              element={
-                <ProtectedRoute>
-                  <Navigate to="/jobs" replace />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
