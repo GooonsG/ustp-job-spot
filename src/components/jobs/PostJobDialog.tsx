@@ -1,12 +1,13 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
+import { Upload } from 'lucide-react';
 
 interface PostJobFormData {
   title: string;
@@ -17,11 +18,14 @@ interface PostJobFormData {
   salary: string;
   deadline: string;
   tags: string;
+  logo?: File | null;
+  logoUrl?: string;
 }
 
 export function PostJobDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<PostJobFormData>({
     title: '',
     company: '',
@@ -30,15 +34,47 @@ export function PostJobDialog() {
     type: '',
     salary: '',
     deadline: '',
-    tags: ''
+    tags: '',
+    logo: null,
+    logoUrl: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
+      let logoUrl = formData.logoUrl;
+
+      // Handle file upload if a file is selected
+      if (formData.logo) {
+        const fileExt = formData.logo.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('job-logos')
+          .upload(filePath, formData.logo);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('job-logos')
+          .getPublicUrl(filePath);
+
+        logoUrl = publicUrl;
+      }
+
       const { error } = await supabase.from('jobs').insert({
-        ...formData,
+        title: formData.title,
+        company: formData.company,
+        location: formData.location,
+        description: formData.description,
+        type: formData.type,
+        salary: formData.salary,
+        deadline: formData.deadline,
         tags: formData.tags.split(',').map(tag => tag.trim()),
+        logo: logoUrl,
         employer_id: (await supabase.auth.getUser()).data.user?.id
       });
 
@@ -48,6 +84,7 @@ export function PostJobDialog() {
         title: "Success",
         description: "Job posting created successfully",
       });
+      
       setIsOpen(false);
       setFormData({
         title: '',
@@ -57,9 +94,10 @@ export function PostJobDialog() {
         type: '',
         salary: '',
         deadline: '',
-        tags: ''
+        tags: '',
+        logo: null,
+        logoUrl: ''
       });
-      window.location.reload(); // Refresh to show new job
     } catch (error) {
       console.error('Error posting job:', error);
       toast({
@@ -67,7 +105,19 @@ export function PostJobDialog() {
         title: "Error",
         description: "Failed to create job posting. Please try again.",
       });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({ ...prev, logo: e.target.files![0], logoUrl: '' }));
+    }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, logoUrl: e.target.value, logo: null }));
   };
 
   return (
@@ -173,6 +223,38 @@ export function PostJobDialog() {
                 placeholder="e.g., IT, Web Development, Design (comma-separated)"
                 required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Company Logo</label>
+                <div className="space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Or enter logo URL"
+                      value={formData.logoUrl}
+                      onChange={handleUrlChange}
+                    />
+                    {formData.logo && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        onClick={() => setFormData(prev => ({ ...prev, logo: null }))}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
