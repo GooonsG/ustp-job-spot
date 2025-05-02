@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthProvider";
 
 // Pages
@@ -14,8 +15,25 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Profile from "./components/profile/Profile";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import EmployerRoute from "@/components/auth/EmployerRoute";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const queryClient = new QueryClient();
+
+// Component to conditionally redirect employers from marketplace
+const MarketplaceRedirect = () => {
+  const { isEmployer, loading } = useUserRole();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  if (isEmployer) {
+    return <Navigate to="/jobs" replace />;
+  }
+  
+  return <Marketplace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -45,7 +63,7 @@ const App = () => (
               path="/marketplace"
               element={
                 <ProtectedRoute>
-                  <Marketplace />
+                  <MarketplaceRedirect />
                 </ProtectedRoute>
               }
             />
