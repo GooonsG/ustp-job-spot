@@ -1,14 +1,85 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBar from '@/components/layout/NavBar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/use-toast';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+
+  const handleNewListing = () => {
+    navigate('/marketplace');
+    toast({
+      title: "New Listing",
+      description: "Redirecting to create a new marketplace listing",
+    });
+  };
+
+  const handleFindOpportunities = () => {
+    navigate('/jobs');
+    toast({
+      title: "Find Opportunities",
+      description: "Redirecting to job opportunities page",
+    });
+  };
+
+  const handleViewListingDetails = (itemId: number) => {
+    toast({
+      title: "View Listing",
+      description: `Viewing details for listing #${itemId}`,
+    });
+  };
+
+  const handleEditListing = (itemId: number) => {
+    toast({
+      title: "Edit Listing",
+      description: `Editing listing #${itemId}`,
+    });
+  };
+
+  const handleDeleteListing = (itemId: number) => {
+    toast({
+      title: "Delete Listing",
+      description: `Listing #${itemId} has been deleted`,
+      variant: "destructive",
+    });
+  };
+
+  const handleViewJobDetails = (applicationId: number) => {
+    toast({
+      title: "Job Application",
+      description: `Viewing details for application #${applicationId}`,
+    });
+  };
+
+  const handleViewSavedItem = (itemId: number) => {
+    toast({
+      title: "Saved Item",
+      description: `Viewing details for saved item #${itemId}`,
+    });
+  };
+
+  const handleRemoveSavedItem = (itemId: number) => {
+    toast({
+      title: "Removed Item",
+      description: `Item #${itemId} has been removed from saved items`,
+      variant: "destructive",
+    });
+  };
+
+  const handleSaveProfileChanges = () => {
+    toast({
+      title: "Profile Updated",
+      description: "Your profile changes have been saved",
+      variant: "default",
+    });
+  };
 
   const marketplaceListings = [
     {
@@ -79,10 +150,16 @@ const Dashboard = () => {
               <p className="text-gray-600 ">Manage your listings and applications</p>
             </div>
             <div className="flex gap-2">
-              <Button className="bg-ustp-yellow text-white hover:brightness-50">
+              <Button 
+                className="bg-ustp-yellow text-white hover:brightness-50"
+                onClick={handleNewListing}
+              >
                 New Listing
               </Button>
-              <Button className="bg-ustp-darkblue text-white hover:brightness-50">
+              <Button 
+                className="bg-ustp-darkblue text-white hover:brightness-50"
+                onClick={handleFindOpportunities}
+              >
                 Find Opportunities
               </Button>
             </div>
@@ -220,9 +297,21 @@ const Dashboard = () => {
                               {item.status === 'active' ? 'Active' : 'Sold'}
                             </Badge>
                             <div className="flex space-x-1">
-                              <Button size="sm" variant="outline" className="h-8 px-2">Edit</Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 px-2"
+                                onClick={() => handleEditListing(item.id)}
+                              >
+                                Edit
+                              </Button>
                               {item.status === 'active' && (
-                                <Button size="sm" variant="outline" className="h-8 px-2 text-red-500 border-red-200 hover:bg-red-50">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-8 px-2 text-red-500 border-red-200 hover:bg-red-50"
+                                  onClick={() => handleDeleteListing(item.id)}
+                                >
                                   Delete
                                 </Button>
                               )}
@@ -234,7 +323,10 @@ const Dashboard = () => {
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-gray-500 mb-4">You haven't posted any items for sale yet</p>
-                      <Button className="bg-ustp-yellow text-black hover:brightness-95">
+                      <Button 
+                        className="bg-ustp-yellow text-black hover:brightness-95"
+                        onClick={handleNewListing}
+                      >
                         + Post New Item
                       </Button>
                     </div>
@@ -272,7 +364,13 @@ const Dashboard = () => {
                                 Status: {application.status}
                               </p>
                             </div>
-                            <Button variant="outline" size="sm">View Details</Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewJobDetails(application.id)}
+                            >
+                              View Details
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -280,7 +378,10 @@ const Dashboard = () => {
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-gray-500 mb-4">You haven't applied to any jobs yet</p>
-                      <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue">
+                      <Button 
+                        className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
+                        onClick={handleFindOpportunities}
+                      >
                         Browse Job Opportunities
                       </Button>
                     </div>
@@ -318,10 +419,19 @@ const Dashboard = () => {
                               Saved on: {new Date(item.savedDate).toLocaleDateString()}
                             </p>
                             <div className="flex space-x-2">
-                              <Button size="sm" className="bg-ustp-blue text-white hover:bg-ustp-darkblue">
+                              <Button 
+                                size="sm" 
+                                className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
+                                onClick={() => handleViewSavedItem(item.id)}
+                              >
                                 View Details
                               </Button>
-                              <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-red-500 border-red-200 hover:bg-red-50"
+                                onClick={() => handleRemoveSavedItem(item.id)}
+                              >
                                 Remove
                               </Button>
                             </div>
@@ -391,7 +501,12 @@ const Dashboard = () => {
 
                     <div className="flex justify-end space-x-2">
                       <Button variant="outline">Cancel</Button>
-                      <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue">Save Changes</Button>
+                      <Button 
+                        className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
+                        onClick={handleSaveProfileChanges}
+                      >
+                        Save Changes
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
