@@ -58,12 +58,12 @@ const Index = () => {
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Link to="/marketplace">
-                    <Button className="modern-button">
+                    <Button className="modern-button bg-gradient-to-r from-ustp-darkblue to-text-indigo-800 text-white font-semibold hover:brightness-95 px-6 py-3 rounded-lg shadow-md">
                       Explore Marketplace
                     </Button>
                   </Link>
                   <Link to="/jobs">
-                    <Button variant="secondary" className="modern-button-secondary rounded-xl">
+                    <Button variant="secondary" className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-semibold hover:brightness-95 px-6 py-3 rounded-lg shadow-md">
                       Browse Jobs
                     </Button>
                   </Link>

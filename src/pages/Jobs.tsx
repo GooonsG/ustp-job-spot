@@ -161,7 +161,7 @@ const Jobs = () => {
                             <span>Deadline: {new Date(job.deadline).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue">
+                        <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 text-black hover:brightness-95 px-6 py-3 rounded-lg shadow-md">
                           Apply Now
                         </Button>
                       </CardFooter>

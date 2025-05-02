@@ -106,13 +106,13 @@ const Dashboard = () => {
             </div>
             <div className="flex gap-2">
               <Button 
-                className="bg-ustp-yellow text-white hover:brightness-50"
+                className="text-white hover:brightness-50 bg-gradient-to-r from-yellow-400 to-yellow-500"
                 onClick={handleNewListing}
               >
                 New Listing
               </Button>
               <Button 
-                className="bg-ustp-darkblue text-white hover:brightness-50"
+                className="bg-gradient-to-r from-ustp-darkblue to-text-indigo-800 text-white hover:brightness-50"
                 onClick={handleFindOpportunities}
               >
                 Find Opportunities
