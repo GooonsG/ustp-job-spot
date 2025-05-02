@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
 
+  // Navigation functions
   const handleNewListing = () => {
     navigate('/marketplace');
     toast({
@@ -29,6 +30,7 @@ const Dashboard = () => {
     });
   };
 
+  // Marketplace listing functions
   const handleViewListingDetails = (itemId: number) => {
     toast({
       title: "View Listing",
@@ -44,13 +46,17 @@ const Dashboard = () => {
   };
 
   const handleDeleteListing = (itemId: number) => {
-    toast({
-      title: "Delete Listing",
-      description: `Listing #${itemId} has been deleted`,
-      variant: "destructive",
-    });
+    // Add confirmation dialog
+    if (confirm("Are you sure you want to delete this listing?")) {
+      toast({
+        title: "Delete Listing",
+        description: `Listing #${itemId} has been deleted`,
+        variant: "destructive",
+      });
+    }
   };
 
+  // Job application functions
   const handleViewJobDetails = (applicationId: number) => {
     toast({
       title: "Job Application",
@@ -58,7 +64,14 @@ const Dashboard = () => {
     });
   };
 
+  // Saved items functions
   const handleViewSavedItem = (itemId: number) => {
+    if (savedItems.find(item => item.id === itemId)?.type === 'job') {
+      navigate('/jobs');
+    } else {
+      navigate('/marketplace');
+    }
+    
     toast({
       title: "Saved Item",
       description: `Viewing details for saved item #${itemId}`,
@@ -66,13 +79,16 @@ const Dashboard = () => {
   };
 
   const handleRemoveSavedItem = (itemId: number) => {
-    toast({
-      title: "Removed Item",
-      description: `Item #${itemId} has been removed from saved items`,
-      variant: "destructive",
-    });
+    if (confirm("Are you sure you want to remove this saved item?")) {
+      toast({
+        title: "Removed Item",
+        description: `Item #${itemId} has been removed from saved items`,
+        variant: "destructive",
+      });
+    }
   };
 
+  // Profile functions
   const handleSaveProfileChanges = () => {
     toast({
       title: "Profile Updated",
@@ -81,6 +97,7 @@ const Dashboard = () => {
     });
   };
 
+  // Mock data - would come from API in a real implementation
   const marketplaceListings = [
     {
       id: 1,
@@ -138,6 +155,73 @@ const Dashboard = () => {
       savedDate: "2023-04-03"
     }
   ];
+
+  // Account settings state
+  const [profileForm, setProfileForm] = useState({
+    firstName: "Recmar",
+    lastName: "Maloys",
+    email: "rec.maloys@ustp.edu.ph",
+    studentId: "2023300767"
+  });
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  // Handle profile form changes
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setProfileForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle password form changes
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle profile form submit
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Profile saved:", profileForm);
+    handleSaveProfileChanges();
+  };
+
+  // Handle password form submit
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simple validation
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log("Password changed");
+    toast({
+      title: "Password Updated",
+      description: "Your password has been changed successfully",
+    });
+    
+    // Reset password form
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -215,7 +299,8 @@ const Dashboard = () => {
                     {marketplaceListings.length > 0 ? (
                       <div className="space-y-4">
                         {marketplaceListings.map(item => (
-                          <div key={item.id} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-md">
+                          <div key={item.id} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+                            onClick={() => handleViewListingDetails(item.id)}>
                             <div className="w-12 h-12 rounded overflow-hidden">
                               <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                             </div>
@@ -244,7 +329,8 @@ const Dashboard = () => {
                     {jobApplications.length > 0 ? (
                       <div className="space-y-4">
                         {jobApplications.map(application => (
-                          <div key={application.id} className="p-2 hover:bg-gray-50 rounded-md">
+                          <div key={application.id} className="p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+                            onClick={() => handleViewJobDetails(application.id)}>
                             <div className="flex justify-between items-start">
                               <div>
                                 <h4 className="font-medium">{application.jobTitle}</h4>
@@ -456,58 +542,108 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-8">
-                    <div>
+                    <form onSubmit={handleProfileSubmit}>
                       <h3 className="text-lg font-medium mb-4">Profile Information</h3>
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                            <input type="text" defaultValue="Recmar" className="ustp-input" />
+                            <input 
+                              type="text" 
+                              name="firstName"
+                              value={profileForm.firstName}
+                              onChange={handleProfileChange}
+                              className="ustp-input w-full p-2 border rounded" 
+                            />
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                            <input type="text" defaultValue="Maloys" className="ustp-input" />
+                            <input 
+                              type="text" 
+                              name="lastName"
+                              value={profileForm.lastName}
+                              onChange={handleProfileChange}
+                              className="ustp-input w-full p-2 border rounded" 
+                            />
                           </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                          <input type="email" defaultValue="rec.maloys@ustp.edu.ph" className="ustp-input" />
+                          <input 
+                            type="email" 
+                            name="email"
+                            value={profileForm.email}
+                            onChange={handleProfileChange}
+                            className="ustp-input w-full p-2 border rounded" 
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
-                          <input type="text" defaultValue="2023300767" className="ustp-input" readOnly />
+                          <input 
+                            type="text" 
+                            name="studentId"
+                            value={profileForm.studentId}
+                            readOnly
+                            className="ustp-input w-full p-2 border rounded bg-gray-50" 
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button 
+                            type="submit"
+                            className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
+                          >
+                            Save Profile Changes
+                          </Button>
                         </div>
                       </div>
-                    </div>
+                    </form>
 
-
-                    <div>
+                    <form onSubmit={handlePasswordSubmit}>
                       <h3 className="text-lg font-medium mb-4">Change Password</h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                          <input type="password" className="ustp-input" />
+                          <input 
+                            type="password" 
+                            name="currentPassword"
+                            value={passwordForm.currentPassword}
+                            onChange={handlePasswordChange}
+                            className="ustp-input w-full p-2 border rounded" 
+                            required
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                          <input type="password" className="ustp-input" />
+                          <input 
+                            type="password" 
+                            name="newPassword"
+                            value={passwordForm.newPassword}
+                            onChange={handlePasswordChange}
+                            className="ustp-input w-full p-2 border rounded" 
+                            required
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                          <input type="password" className="ustp-input" />
+                          <input 
+                            type="password" 
+                            name="confirmPassword"
+                            value={passwordForm.confirmPassword}
+                            onChange={handlePasswordChange}
+                            className="ustp-input w-full p-2 border rounded" 
+                            required
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button 
+                            type="submit"
+                            className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
+                          >
+                            Update Password
+                          </Button>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline">Cancel</Button>
-                      <Button 
-                        className="bg-ustp-blue text-white hover:bg-ustp-darkblue"
-                        onClick={handleSaveProfileChanges}
-                      >
-                        Save Changes
-                      </Button>
-                    </div>
+                    </form>
                   </div>
                 </CardContent>
               </Card>
