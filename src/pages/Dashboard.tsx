@@ -8,10 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
+import { useMarketplaceListings } from '@/hooks/useMarketplaceListings';
+import { useJobApplications } from '@/hooks/useJobApplications';
+import { useSavedItems } from '@/hooks/useSavedItems';
+import { Loader2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+  
+  // Fetch data using our new hooks
+  const { listings: marketplaceListings, loading: listingsLoading, error: listingsError } = useMarketplaceListings();
+  const { applications: jobApplications, loading: applicationsLoading, error: applicationsError } = useJobApplications();
+  const { savedItems, loading: savedItemsLoading, error: savedItemsError } = useSavedItems();
 
   // Navigation functions
   const handleNewListing = () => {
@@ -31,21 +40,21 @@ const Dashboard = () => {
   };
 
   // Marketplace listing functions
-  const handleViewListingDetails = (itemId: number) => {
+  const handleViewListingDetails = (itemId: string) => {
     toast({
       title: "View Listing",
       description: `Viewing details for listing #${itemId}`,
     });
   };
 
-  const handleEditListing = (itemId: number) => {
+  const handleEditListing = (itemId: string) => {
     toast({
       title: "Edit Listing",
       description: `Editing listing #${itemId}`,
     });
   };
 
-  const handleDeleteListing = (itemId: number) => {
+  const handleDeleteListing = (itemId: string) => {
     // Add confirmation dialog
     if (confirm("Are you sure you want to delete this listing?")) {
       toast({
@@ -57,7 +66,7 @@ const Dashboard = () => {
   };
 
   // Job application functions
-  const handleViewJobDetails = (applicationId: number) => {
+  const handleViewJobDetails = (applicationId: string) => {
     toast({
       title: "Job Application",
       description: `Viewing details for application #${applicationId}`,
@@ -65,7 +74,7 @@ const Dashboard = () => {
   };
 
   // Saved items functions
-  const handleViewSavedItem = (itemId: number) => {
+  const handleViewSavedItem = (itemId: string) => {
     if (savedItems.find(item => item.id === itemId)?.type === 'job') {
       navigate('/jobs');
     } else {
@@ -78,7 +87,7 @@ const Dashboard = () => {
     });
   };
 
-  const handleRemoveSavedItem = (itemId: number) => {
+  const handleRemoveSavedItem = (itemId: string) => {
     if (confirm("Are you sure you want to remove this saved item?")) {
       toast({
         title: "Removed Item",
@@ -96,65 +105,6 @@ const Dashboard = () => {
       variant: "default",
     });
   };
-
-  // Mock data - would come from API in a real implementation
-  const marketplaceListings = [
-    {
-      id: 1,
-      title: "Engineering Mechanics Textbook",
-      price: 400,
-      status: "active",
-      postedDate: "2023-04-01",
-      views: 24,
-      image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-    },
-    {
-      id: 2,
-      title: "Lab Safety Goggles",
-      price: 150,
-      status: "sold",
-      postedDate: "2023-03-15",
-      views: 37,
-      image: "https://images.unsplash.com/photo-1583394745820-53627dcd92f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-    }
-  ];
-
-  const jobApplications = [
-    {
-      id: 1,
-      jobTitle: "Research Assistant",
-      company: "USTP Research Department",
-      appliedDate: "2023-04-05",
-      status: "Under Review",
-      type: "On-campus"
-    },
-    {
-      id: 2,
-      jobTitle: "Web Developer Intern",
-      company: "TechSolutions Inc.",
-      appliedDate: "2023-04-02",
-      status: "Interview Scheduled",
-      type: "Internship"
-    }
-  ];
-
-  const savedItems = [
-    {
-      id: 1,
-      type: "job",
-      title: "Graphic Design Freelancer",
-      company: "Creative Arts Studio",
-      savedDate: "2023-04-08"
-    },
-    {
-      id: 2,
-      type: "marketplace",
-      title: "Scientific Calculator FX-991EX",
-      price: 850,
-      seller: "Maria Garcia",
-      savedDate: "2023-04-03"
-    }
-  ];
 
   // Account settings state
   const [profileForm, setProfileForm] = useState({
@@ -223,6 +173,27 @@ const Dashboard = () => {
     });
   };
 
+  // Loading indicator component
+  const LoadingIndicator = () => (
+    <div className="flex justify-center items-center py-8">
+      <Loader2 className="h-8 w-8 animate-spin text-ustp-blue" />
+    </div>
+  );
+
+  // Error message component
+  const ErrorMessage = ({ message }: { message: string }) => (
+    <div className="text-center py-6">
+      <p className="text-red-500">{message}</p>
+      <Button 
+        variant="outline" 
+        className="mt-2"
+        onClick={() => window.location.reload()}
+      >
+        Try Again
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -265,8 +236,16 @@ const Dashboard = () => {
                     <CardTitle className="text-lg">Marketplace Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-ustp-blue">{marketplaceListings.length}</div>
-                    <p className="text-sm text-gray-500">Active Listings</p>
+                    {listingsLoading ? (
+                      <div className="h-12 flex items-center">
+                        <Loader2 className="h-5 w-5 animate-spin text-ustp-blue" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-3xl font-bold text-ustp-blue">{marketplaceListings.length}</div>
+                        <p className="text-sm text-gray-500">Active Listings</p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
@@ -274,8 +253,16 @@ const Dashboard = () => {
                     <CardTitle className="text-lg">Job Applications</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-ustp-blue">{jobApplications.length}</div>
-                    <p className="text-sm text-gray-500">Applications Submitted</p>
+                    {applicationsLoading ? (
+                      <div className="h-12 flex items-center">
+                        <Loader2 className="h-5 w-5 animate-spin text-ustp-blue" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-3xl font-bold text-ustp-blue">{jobApplications.length}</div>
+                        <p className="text-sm text-gray-500">Applications Submitted</p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
@@ -283,8 +270,16 @@ const Dashboard = () => {
                     <CardTitle className="text-lg">Saved Items</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-ustp-blue">{savedItems.length}</div>
-                    <p className="text-sm text-gray-500">Items Saved</p>
+                    {savedItemsLoading ? (
+                      <div className="h-12 flex items-center">
+                        <Loader2 className="h-5 w-5 animate-spin text-ustp-blue" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-3xl font-bold text-ustp-blue">{savedItems.length}</div>
+                        <p className="text-sm text-gray-500">Items Saved</p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -296,13 +291,21 @@ const Dashboard = () => {
                     <CardDescription>Your active and recently sold items</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {marketplaceListings.length > 0 ? (
+                    {listingsLoading ? (
+                      <LoadingIndicator />
+                    ) : listingsError ? (
+                      <ErrorMessage message={listingsError} />
+                    ) : marketplaceListings.length > 0 ? (
                       <div className="space-y-4">
                         {marketplaceListings.map(item => (
                           <div key={item.id} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-md cursor-pointer"
                             onClick={() => handleViewListingDetails(item.id)}>
-                            <div className="w-12 h-12 rounded overflow-hidden">
-                              <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                            <div className="w-12 h-12 rounded overflow-hidden bg-gray-200">
+                              {item.image_url ? (
+                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">No img</div>
+                              )}
                             </div>
                             <div className="flex-1">
                               <h4 className="font-medium">{item.title}</h4>
@@ -326,7 +329,11 @@ const Dashboard = () => {
                     <CardDescription>Status of your recent applications</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {jobApplications.length > 0 ? (
+                    {applicationsLoading ? (
+                      <LoadingIndicator />
+                    ) : applicationsError ? (
+                      <ErrorMessage message={applicationsError} />
+                    ) : jobApplications.length > 0 ? (
                       <div className="space-y-4">
                         {jobApplications.map(application => (
                           <div key={application.id} className="p-2 hover:bg-gray-50 rounded-md cursor-pointer"
@@ -362,12 +369,20 @@ const Dashboard = () => {
                   <CardDescription>Manage your buy and sell items</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {marketplaceListings.length > 0 ? (
+                  {listingsLoading ? (
+                    <LoadingIndicator />
+                  ) : listingsError ? (
+                    <ErrorMessage message={listingsError} />
+                  ) : marketplaceListings.length > 0 ? (
                     <div className="space-y-4">
                       {marketplaceListings.map(item => (
                         <div key={item.id} className="flex items-center space-x-4 p-3 border rounded-md">
-                          <div className="w-16 h-16 rounded overflow-hidden">
-                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          <div className="w-16 h-16 rounded overflow-hidden bg-gray-200">
+                            {item.image_url ? (
+                              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">No image</div>
+                            )}
                           </div>
                           <div className="flex-1">
                             <h4 className="font-medium">{item.title}</h4>
@@ -375,7 +390,7 @@ const Dashboard = () => {
                             <div className="flex text-xs text-gray-500 mt-1">
                               <span>Posted: {new Date(item.postedDate).toLocaleDateString()}</span>
                               <span className="mx-2">•</span>
-                              <span>Views: {item.views}</span>
+                              <span>Views: {item.views || 0}</span>
                             </div>
                           </div>
                           <div className="flex flex-col space-y-2">
@@ -428,7 +443,11 @@ const Dashboard = () => {
                   <CardDescription>Track and manage your job applications</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {jobApplications.length > 0 ? (
+                  {applicationsLoading ? (
+                    <LoadingIndicator />
+                  ) : applicationsError ? (
+                    <ErrorMessage message={applicationsError} />
+                  ) : jobApplications.length > 0 ? (
                     <div className="space-y-4">
                       {jobApplications.map(application => (
                         <div key={application.id} className="p-4 border rounded-md">
@@ -483,7 +502,11 @@ const Dashboard = () => {
                   <CardDescription>Jobs and marketplace items you've saved</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {savedItems.length > 0 ? (
+                  {savedItemsLoading ? (
+                    <LoadingIndicator />
+                  ) : savedItemsError ? (
+                    <ErrorMessage message={savedItemsError} />
+                  ) : savedItems.length > 0 ? (
                     <div className="space-y-4">
                       {savedItems.map(item => (
                         <div key={item.id} className="p-4 border rounded-md">
@@ -493,7 +516,7 @@ const Dashboard = () => {
                               {item.type === 'job' ? (
                                 <p className="text-gray-600">{item.company}</p>
                               ) : (
-                                <p className="text-gray-600">₱{item.price} • Seller: {item.seller}</p>
+                                <p className="text-gray-600">₱{item.price?.toFixed(2)} • Seller: {item.seller}</p>
                               )}
                             </div>
                             <Badge className={item.type === 'job' ? 'bg-ustp-blue text-white' : 'bg-ustp-yellow text-white'}>
