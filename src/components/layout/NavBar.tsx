@@ -99,16 +99,11 @@ const NavBar = () => {
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
                       </p>
-                      {isEmployer ? (
+                      {isEmployer && (
                         <p className="text-xs text-ustp-blue font-semibold">
                           Employer Account
                         </p>
-                      ): (
-                        <p className="text-xs text-ustp-blue font-semibold">
-                          Student Account
-                        </p>
                       )}
-                      
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
