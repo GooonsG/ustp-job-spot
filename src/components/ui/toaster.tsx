@@ -14,7 +14,7 @@ export function Toaster() {
     }) {
       return <Toast key={id} className="bg-ustp-magenta my-0">
             <div className="grid gap-1">
-              {title && <ToastTitle className="bg-inherit">{title}</ToastTitle>}
+              {title && <ToastTitle className="text- ustp-cyan bg-inherit">{title}</ToastTitle>}
               {description && <ToastDescription>{description}</ToastDescription>}
             </div>
             {action}
