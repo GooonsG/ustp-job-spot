@@ -1,29 +1,74 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/context/AuthProvider';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { UserCircle, LogOut, Settings } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthProvider';
+import { useUserRole } from '@/hooks/useUserRole';
+import { toast } from '@/hooks/use-toast';
+import { Home, User, LogOut, Bell, MessageSquare, MailIcon, ShoppingCart, Briefcase } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
-const NavbarUser = () => {
+export default function NavbarUser() {
   const { user, signOut } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+  const { isStudent, isEmployer } = useUserRole();
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Fetch unread messages count
+    const fetchUnreadMessages = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_user_messages', {
+          p_user_id: user.id
+        });
+
+        if (!error && data) {
+          const count = data.reduce((total: number, conv: any) => total + conv.unread_count, 0);
+          setUnreadCount(count);
+        }
+      } catch (err) {
+        console.error('Error fetching unread messages:', err);
+      }
+    };
+
+    fetchUnreadMessages();
+
+    // Setup realtime subscription for messages
+    const channel = supabase.channel('messages-badge-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'marketplace_messages'
+      }, () => fetchUnreadMessages())
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'job_messages'
+      }, () => fetchUnreadMessages())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      setIsOpen(false);
-      // Auth state change listener will handle the UI update
+      navigate('/auth');
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error('Sign out error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -33,55 +78,60 @@ const NavbarUser = () => {
   };
 
   if (!user) {
-    return (
-      <Link to="/auth">
-        <Button variant="outline" className="border-ustp-blue text-ustp-blue hover:bg-ustp-blue hover:text-white">
-          Login
-        </Button>
-      </Link>
-    );
+    return <Button onClick={() => navigate('/auth')}>Sign In</Button>;
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative rounded-full w-10 h-10 p-0">
-          <UserCircle className="h-6 w-6 text-ustp-blue" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="cursor-pointer">
-          <div className="flex flex-col space-y-1">
-            <span className="text-sm font-medium">
-              {user.email}
-            </span>
-            <span className="text-xs text-gray-500">
-              USTP Student
-            </span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard" className="cursor-pointer flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer flex items-center">
-            <UserCircle className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-500 focus:text-red-500">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+    <div className="flex items-center gap-4">
+      <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="relative">
+        <MessageSquare className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </Badge>
+        )}
+      </Button>
 
-export default NavbarUser;
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Avatar className="cursor-pointer">
+            <AvatarImage src="/placeholder.svg" alt="User" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem onClick={() => navigate('/')}>
+            <Home className="mr-2 h-4 w-4" />
+            <span>Home</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+            <User className="mr-2 h-4 w-4" />
+            <span>Dashboard</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/messages')}>
+            <MessageSquare className="mr-2 h-4 w-4" />
+            <span>Messages</span>
+            {unreadCount > 0 && (
+              <Badge className="ml-auto bg-red-500">{unreadCount}</Badge>
+            )}
+          </DropdownMenuItem>
+          {isStudent && (
+            <DropdownMenuItem onClick={() => navigate('/marketplace')}>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              <span>Marketplace</span>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => navigate('/jobs')}>
+            <Briefcase className="mr-2 h-4 w-4" />
+            <span>Jobs</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}

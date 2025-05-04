@@ -50,6 +50,41 @@ export type Database = {
           },
         ]
       }
+      job_messages: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          message: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          message: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           company: string
@@ -232,6 +267,21 @@ export type Database = {
         Args: { app_id: string; user_id: string }
         Returns: undefined
       }
+      get_conversation_messages: {
+        Args: {
+          p_user_id: string
+          p_conversation_id: string
+          p_conversation_type: string
+        }
+        Returns: {
+          id: string
+          sender_id: string
+          sender_email: string
+          message: string
+          created_at: string
+          is_sender: boolean
+        }[]
+      }
       get_saved_item_details: {
         Args: { p_user_id: string; p_item_id: string; p_item_type: string }
         Returns: {
@@ -280,12 +330,36 @@ export type Database = {
           type: string
         }[]
       }
+      get_user_messages: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          conversation_id: string
+          conversation_type: string
+          other_user_id: string
+          other_user_name: string
+          last_message: string
+          last_message_time: string
+          unread_count: number
+          title: string
+          job_or_item_id: string
+        }[]
+      }
       is_item_saved: {
         Args: { p_user_id: string; p_item_id: string; p_item_type: string }
         Returns: boolean
       }
       save_item: {
         Args: { p_user_id: string; p_item_id: string; p_item_type: string }
+        Returns: undefined
+      }
+      send_message: {
+        Args: {
+          p_sender_id: string
+          p_conversation_id: string
+          p_conversation_type: string
+          p_message: string
+        }
         Returns: undefined
       }
       unsave_item: {

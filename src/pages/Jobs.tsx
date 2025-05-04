@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +9,14 @@ import Footer from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/badge';
 import { PostJobDialog } from '@/components/jobs/PostJobDialog';
 import { ApplyJobDialog } from '@/components/jobs/ApplyJobDialog';
+import { MessageEmployerDialog } from '@/components/jobs/MessageEmployerDialog';
 import { Toaster } from '@/components/ui/toaster';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/context/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useSavedItems } from '@/hooks/useSavedItems';
+import { Bookmark, MessageSquare } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -26,6 +30,7 @@ interface Job {
   posted_date: string;
   logo: string;
   tags: string[];
+  employer_id: string;
 }
 
 const Jobs = () => {
@@ -36,11 +41,19 @@ const Jobs = () => {
   const [sortOption, setSortOption] = useState('latest');
   const { isEmployer } = useUserRole();
   const { user } = useAuth();
+  const { saveItem, unsaveItem, isItemSaved } = useSavedItems();
+  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchJobs();
     subscribeToJobs();
   }, []);
+
+  useEffect(() => {
+    if (user && jobs.length > 0) {
+      checkSavedJobs();
+    }
+  }, [user, jobs]);
 
   const fetchJobs = async () => {
     const { data, error } = await supabase.from('jobs').select('*').order('posted_date', {
@@ -56,6 +69,19 @@ const Jobs = () => {
     setFilteredJobs(data || []);
   };
 
+  const checkSavedJobs = async () => {
+    const savedIds = new Set<string>();
+    
+    for (const job of jobs) {
+      const isSaved = await isItemSaved(job.id, 'job');
+      if (isSaved) {
+        savedIds.add(job.id);
+      }
+    }
+    
+    setSavedJobIds(savedIds);
+  };
+
   const subscribeToJobs = () => {
     const channel = supabase.channel('jobs-changes').on('postgres_changes', {
       event: '*',
@@ -69,6 +95,72 @@ const Jobs = () => {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const handleSaveJob = async (jobId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save jobs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const isSaved = savedJobIds.has(jobId);
+      
+      if (isSaved) {
+        // Find the saved item id for this job and unsave it
+        const { data, error } = await supabase
+          .from('saved_items')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('item_id', jobId)
+          .eq('item_type', 'job')
+          .single();
+          
+        if (error) throw error;
+        
+        const result = await unsaveItem(data.id);
+        if (!result.success) throw new Error(result.error);
+        
+        // Update local state
+        setSavedJobIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
+        
+        toast({
+          title: "Job unsaved",
+          description: "Job has been removed from your saved items",
+        });
+      } else {
+        // Save the job
+        const result = await saveItem(jobId, 'job');
+        if (!result.success) throw new Error(result.error);
+        
+        // Update local state
+        setSavedJobIds(prev => {
+          const newSet = new Set(prev);
+          newSet.add(jobId);
+          return newSet;
+        });
+        
+        toast({
+          title: "Job saved",
+          description: "Job has been added to your saved items",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error saving/unsaving job:', error);
+      toast({
+        title: "Operation failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -194,39 +286,68 @@ const Jobs = () => {
                           <span>Deadline: {new Date(job.deadline).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      {user && !isEmployer ? (
-                        <ApplyJobDialog 
-                          jobId={job.id} 
-                          jobTitle={job.title} 
-                          company={job.company}
-                          trigger={
-                            <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 text-black hover:brightness-95 px-6 py-3 rounded-lg shadow-md">
-                              Apply Now
+                      
+                      <div className="flex gap-2">
+                        {user && !isEmployer && (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleSaveJob(job.id)}
+                              className={savedJobIds.has(job.id) ? "bg-blue-50" : ""}
+                            >
+                              <Bookmark className={`h-4 w-4 mr-2 ${savedJobIds.has(job.id) ? "fill-blue-500 text-blue-500" : ""}`} />
+                              {savedJobIds.has(job.id) ? "Saved" : "Save"}
                             </Button>
-                          }
-                        />
-                      ) : (
-                        <Button 
-                          className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 text-black hover:brightness-95 px-6 py-3 rounded-lg shadow-md"
-                          onClick={() => {
-                            if (!user) {
-                              toast({
-                                title: "Authentication required",
-                                description: "Please sign in to apply for jobs",
-                                variant: "destructive",
-                              });
-                            } else if (isEmployer) {
-                              toast({
-                                title: "Employer account",
-                                description: "Employers cannot apply for jobs",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
-                        >
-                          Apply Now
-                        </Button>
-                      )}
+                            
+                            <MessageEmployerDialog 
+                              jobId={job.id}
+                              jobTitle={job.title}
+                              employerId={job.employer_id}
+                              trigger={
+                                <Button variant="outline" size="sm">
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  Message
+                                </Button>
+                              }
+                            />
+                            
+                            <ApplyJobDialog 
+                              jobId={job.id} 
+                              jobTitle={job.title} 
+                              company={job.company}
+                              trigger={
+                                <Button className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 hover:brightness-95 px-6 py-2 rounded-lg shadow-md">
+                                  Apply Now
+                                </Button>
+                              }
+                            />
+                          </>
+                        )}
+                        
+                        {(isEmployer || !user) && (
+                          <Button 
+                            className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 hover:brightness-95 px-6 py-2 rounded-lg shadow-md"
+                            onClick={() => {
+                              if (!user) {
+                                toast({
+                                  title: "Authentication required",
+                                  description: "Please sign in to apply for jobs",
+                                  variant: "destructive",
+                                });
+                              } else if (isEmployer) {
+                                toast({
+                                  title: "Employer account",
+                                  description: "Employers cannot apply for jobs",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            Apply Now
+                          </Button>
+                        )}
+                      </div>
                     </CardFooter>
                   </div>
                 </div>
