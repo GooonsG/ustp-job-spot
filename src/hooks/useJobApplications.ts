@@ -5,11 +5,13 @@ import { useAuth } from '@/context/AuthProvider';
 
 export type JobApplication = {
   id: string;
+  jobId: string;
   jobTitle: string;
   company: string;
   appliedDate: string;
   status: string;
   type: string;
+  coverLetter: string | null;
 };
 
 export function useJobApplications() {
@@ -25,35 +27,29 @@ export function useJobApplications() {
       return;
     }
 
-    // This is a placeholder for a real implementation
-    // In a real app, you would have a job_applications table
     const fetchApplications = async () => {
       try {
-        // Placeholder for real job application data
-        // In a real implementation, you would fetch from a job_applications table
-        
-        // Since we don't have an actual job_applications table yet, 
-        // we'll create example data based on existing jobs
+        // Fetch job applications and join with jobs to get job details
         const { data, error } = await supabase
-          .from('jobs')
-          .select('*')
-          .limit(2);
+          .rpc('get_user_applications', { user_id: user.id });
 
         if (error) throw error;
 
-        // Transform jobs data to mock applications
-        // In a real app, you would fetch from a dedicated applications table
-        const mockApplications = data.map(job => ({
-          id: job.id,
-          jobTitle: job.title,
-          company: job.company,
-          appliedDate: new Date().toISOString(),
-          status: Math.random() > 0.5 ? 'Under Review' : 'Interview Scheduled',
-          type: job.type
-        }));
+        if (data) {
+          const formattedApplications = data.map((app: any) => ({
+            id: app.id,
+            jobId: app.job_id,
+            jobTitle: app.title,
+            company: app.company,
+            appliedDate: app.created_at,
+            status: app.status,
+            type: app.type,
+            coverLetter: app.cover_letter
+          }));
 
-        setApplications(mockApplications);
-      } catch (err) {
+          setApplications(formattedApplications);
+        }
+      } catch (err: any) {
         console.error('Error fetching job applications:', err);
         setError('Failed to fetch your job applications');
       } finally {
@@ -64,5 +60,23 @@ export function useJobApplications() {
     fetchApplications();
   }, [user]);
 
-  return { applications, loading, error };
+  const withdrawApplication = async (applicationId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    try {
+      const { error } = await supabase
+        .rpc('delete_application', { app_id: applicationId, user_id: user.id });
+
+      if (error) throw error;
+
+      // Update local state
+      setApplications(applications.filter(app => app.id !== applicationId));
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error withdrawing application:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  return { applications, loading, error, withdrawApplication };
 }
