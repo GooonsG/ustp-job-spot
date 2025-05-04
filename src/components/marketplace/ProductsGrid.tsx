@@ -14,8 +14,15 @@ const ProductsGrid = ({ products, onProductUpdate }: ProductsGridProps) => {
         products.map((product, index) => (
           <ProductCard 
             key={product.id} 
-            product={product} 
-            index={index} 
+            id={product.id}
+            title={product.title}
+            price={product.price}
+            condition={product.condition}
+            category={product.category}
+            imageUrl={product.image}
+            sellerName={product.seller}
+            sellerId={product.seller_id || ''}
+            date={product.createdAt}
             onProductUpdate={onProductUpdate}
           />
         ))
