@@ -228,7 +228,70 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_application: {
+        Args: { app_id: string; user_id: string }
+        Returns: undefined
+      }
+      get_saved_item_details: {
+        Args: { p_user_id: string; p_item_id: string; p_item_type: string }
+        Returns: {
+          saved_id: string
+          item_id: string
+          item_type: string
+          created_at: string
+          title: string
+          company: string
+          salary: string
+          job_type: string
+          price: number
+          seller_name: string
+          category: string
+        }[]
+      }
+      get_saved_items: {
+        Args: { p_user_id: string; p_item_type?: string }
+        Returns: {
+          saved_id: string
+          item_id: string
+          item_type: string
+          created_at: string
+          title: string
+          company: string
+          salary: string
+          job_type: string
+          price: number
+          seller_name: string
+          category: string
+        }[]
+      }
+      get_user_applications: {
+        Args: { user_id: string }
+        Returns: {
+          id: string
+          job_id: string
+          applicant_id: string
+          cover_letter: string
+          resume_url: string
+          status: string
+          created_at: string
+          updated_at: string
+          title: string
+          company: string
+          type: string
+        }[]
+      }
+      is_item_saved: {
+        Args: { p_user_id: string; p_item_id: string; p_item_type: string }
+        Returns: boolean
+      }
+      save_item: {
+        Args: { p_user_id: string; p_item_id: string; p_item_type: string }
+        Returns: undefined
+      }
+      unsave_item: {
+        Args: { p_user_id: string; p_saved_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role: "student" | "employer"

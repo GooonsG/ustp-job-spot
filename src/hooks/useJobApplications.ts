@@ -29,7 +29,7 @@ export function useJobApplications() {
 
     const fetchApplications = async () => {
       try {
-        // Fetch job applications and join with jobs to get job details
+        // Use RPC to call the database function
         const { data, error } = await supabase
           .rpc('get_user_applications', { user_id: user.id });
 
@@ -64,6 +64,7 @@ export function useJobApplications() {
     if (!user) return { success: false, error: 'User not authenticated' };
 
     try {
+      // Use RPC to call the database function
       const { error } = await supabase
         .rpc('delete_application', { app_id: applicationId, user_id: user.id });
 

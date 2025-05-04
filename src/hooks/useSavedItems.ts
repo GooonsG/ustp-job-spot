@@ -32,6 +32,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
 
     const fetchSavedItems = async () => {
       try {
+        // Use RPC to call the database function
         const { data, error } = await supabase
           .rpc('get_saved_items', { 
             p_user_id: user.id, 
@@ -72,6 +73,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
     if (!user) return { success: false, error: 'User not authenticated' };
 
     try {
+      // Use RPC to call the database function
       const { data, error } = await supabase
         .rpc('save_item', { 
           p_user_id: user.id, 
@@ -81,7 +83,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
 
       if (error) throw error;
 
-      // Refresh the list
+      // Fetch the newly saved item details
       const { data: newItem } = await supabase
         .rpc('get_saved_item_details', { 
           p_user_id: user.id, 
@@ -118,6 +120,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
     if (!user) return { success: false, error: 'User not authenticated' };
 
     try {
+      // Use RPC to call the database function
       const { error } = await supabase
         .rpc('unsave_item', { 
           p_user_id: user.id, 
@@ -139,6 +142,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
     if (!user) return false;
 
     try {
+      // Use RPC to call the database function
       const { data, error } = await supabase
         .rpc('is_item_saved', { 
           p_user_id: user.id, 

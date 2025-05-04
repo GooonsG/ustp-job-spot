@@ -45,6 +45,7 @@ export function ApplyJobDialog({ jobId, jobTitle, company, trigger }: ApplyJobDi
     setIsSubmitting(true);
     
     try {
+      // Insert directly - this is now allowed because we created the table
       const { error } = await supabase
         .from('job_applications')
         .insert({
