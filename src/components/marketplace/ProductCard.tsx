@@ -20,6 +20,7 @@ interface ProductCardProps {
   sellerName: string;
   sellerId: string;
   date: string;
+  onProductUpdate: () => void;
 }
 
 export function ProductCard({
@@ -31,7 +32,8 @@ export function ProductCard({
   imageUrl,
   sellerName,
   sellerId,
-  date
+  date,
+  onProductUpdate
 }: ProductCardProps) {
   const { saveItem, unsaveItem, isItemSaved } = useSavedItems();
   const [isSaved, setIsSaved] = useState(false);
