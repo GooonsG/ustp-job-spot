@@ -36,5 +36,6 @@ export function useUserRole() {
     checkUserRole();
   }, [user]);
 
-  return { isEmployer, loading };
+  // Add isStudent property that's the opposite of isEmployer
+  return { isEmployer, isStudent: !isEmployer, loading };
 }

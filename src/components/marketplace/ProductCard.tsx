@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -161,3 +162,6 @@ export function ProductCard({
     </Card>
   );
 }
+
+// Also export as default for backward compatibility
+export default ProductCard;

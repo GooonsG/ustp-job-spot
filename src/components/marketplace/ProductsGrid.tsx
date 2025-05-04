@@ -1,6 +1,6 @@
 
 import { Product } from '@/types/marketplace';
-import ProductCard from './ProductCard';
+import { ProductCard } from './ProductCard';
 
 interface ProductsGridProps {
   products: Product[];

@@ -89,7 +89,7 @@ export function useMessages() {
         if (currentConversation && 
             currentConversation.conversationType === 'marketplace' && 
             payload.new && 
-            payload.new.product_id === currentConversation.conversationId) {
+            (payload.new as any).product_id === currentConversation.conversationId) {
           fetchMessages(currentConversation);
         }
       })
@@ -105,7 +105,7 @@ export function useMessages() {
         if (currentConversation && 
             currentConversation.conversationType === 'job' && 
             payload.new && 
-            payload.new.application_id === currentConversation.conversationId) {
+            (payload.new as any).application_id === currentConversation.conversationId) {
           fetchMessages(currentConversation);
         }
       })
