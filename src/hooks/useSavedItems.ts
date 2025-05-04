@@ -45,7 +45,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
           const formattedItems = data.map((item: any) => ({
             id: item.saved_id,
             itemId: item.item_id,
-            itemType: item.item_type,
+            itemType: item.item_type as 'job' | 'marketplace',
             title: item.title,
             company: item.company,
             salary: item.salary,
@@ -92,10 +92,10 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
         });
 
       if (newItem && newItem.length > 0) {
-        const formattedItem = {
+        const formattedItem: SavedItem = {
           id: newItem[0].saved_id,
           itemId: newItem[0].item_id,
-          itemType: newItem[0].item_type,
+          itemType: newItem[0].item_type as 'job' | 'marketplace',
           title: newItem[0].title,
           company: newItem[0].company,
           salary: newItem[0].salary,

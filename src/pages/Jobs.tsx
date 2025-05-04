@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/context/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface Job {
   id: string;
