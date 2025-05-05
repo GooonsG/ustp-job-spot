@@ -70,9 +70,9 @@ const ProductCard = ({ product, onProductUpdate, isSaved = false, onToggleSave }
         onClick={() => navigate(`/marketplace/${product.id}`)}
       >
         <div className="relative h-48 overflow-hidden bg-gray-100">
-          {product.image_url ? (
+          {(product.image_url || product.image) ? (
             <img 
-              src={product.image_url} 
+              src={product.image_url || product.image} 
               alt={product.title} 
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
             />
@@ -127,28 +127,28 @@ const ProductCard = ({ product, onProductUpdate, isSaved = false, onToggleSave }
               </Button>
             )}
             <div className="text-xs text-gray-500 flex items-center">
-              {product.seller_name?.substring(0, 15)}
+              {(product.seller_name || product.seller)?.substring(0, 15)}
             </div>
           </div>
         </CardFooter>
       </Card>
 
-      {!isOwner && (
+      {!isOwner && messageDialogOpen && (
         <MessageSellerDialog
-          open={messageDialogOpen}
-          onOpenChange={setMessageDialogOpen}
           productId={product.id}
           productTitle={product.title}
           sellerId={product.seller_id || ''}
+          open={messageDialogOpen}
+          onOpenChange={setMessageDialogOpen}
         />
       )}
 
-      {isOwner && (
+      {isOwner && editDialogOpen && (
         <EditItemDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
           product={product}
           onSuccess={onProductUpdate}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
         />
       )}
     </>
