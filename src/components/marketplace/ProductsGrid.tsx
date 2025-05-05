@@ -1,6 +1,6 @@
 
 import { Product } from '@/types/marketplace';
-import { ProductCard } from './ProductCard';
+import ProductCard from './ProductCard';
 
 interface ProductsGridProps {
   products: Product[];
@@ -14,15 +14,7 @@ const ProductsGrid = ({ products, onProductUpdate }: ProductsGridProps) => {
         products.map((product) => (
           <ProductCard 
             key={product.id} 
-            id={product.id}
-            title={product.title}
-            price={product.price}
-            condition={product.condition}
-            category={product.category}
-            imageUrl={product.image}
-            sellerName={product.seller}
-            sellerId={product.seller_id || ''}
-            date={product.createdAt}
+            product={product}
             onProductUpdate={onProductUpdate}
           />
         ))

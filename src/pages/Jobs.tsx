@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useSavedItems } from '@/hooks/useSavedItems';
 import { Bookmark, MessageSquare } from 'lucide-react';
+import ViewDetails from '@/components/shared/ViewDetails';
 
 interface Job {
   id: string;
@@ -406,8 +407,9 @@ const Jobs = () => {
           jobId={selectedJob.id} 
           jobTitle={selectedJob.title} 
           company={selectedJob.company}
-          open={applyOpen}
-          onOpenChange={setApplyOpen}
+          trigger={
+            <span style={{ display: 'none' }}></span>
+          }
         />
       )}
     </div>

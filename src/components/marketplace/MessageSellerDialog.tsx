@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,8 +10,8 @@ import { useAuth } from '@/context/AuthProvider';
 import { Loader2, MessageSquare } from 'lucide-react';
 
 interface MessageSellerDialogProps {
-  itemId: string;
-  itemTitle: string;
+  productId: string;
+  productTitle: string;
   sellerId: string;
   trigger?: React.ReactNode;
 }
@@ -21,7 +20,7 @@ interface MessageFormValues {
   message: string;
 }
 
-export function MessageSellerDialog({ itemId, itemTitle, sellerId, trigger }: MessageSellerDialogProps) {
+export function MessageSellerDialog({ productId, productTitle, sellerId, trigger }: MessageSellerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
@@ -48,7 +47,7 @@ export function MessageSellerDialog({ itemId, itemTitle, sellerId, trigger }: Me
       const { error } = await supabase
         .from('marketplace_messages')
         .insert({
-          product_id: itemId,
+          product_id: productId,
           sender_id: user.id,
           receiver_id: sellerId,
           message: values.message
@@ -58,7 +57,7 @@ export function MessageSellerDialog({ itemId, itemTitle, sellerId, trigger }: Me
 
       toast({
         title: "Message sent!",
-        description: `Your message about ${itemTitle} has been sent to the seller.`,
+        description: `Your message about ${productTitle} has been sent to the seller.`,
       });
       
       form.reset();
@@ -87,7 +86,7 @@ export function MessageSellerDialog({ itemId, itemTitle, sellerId, trigger }: Me
       </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Message About {itemTitle}</DialogTitle>
+          <DialogTitle>Message About {productTitle}</DialogTitle>
           <DialogDescription>
             Send a message to the seller about this item.
           </DialogDescription>

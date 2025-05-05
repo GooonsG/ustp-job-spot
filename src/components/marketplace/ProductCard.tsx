@@ -20,6 +20,7 @@ const ProductCard = ({ product, onProductUpdate }: ProductCardProps) => {
   const [loading, setLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   
   const isOwner = user && product.seller_id === user.id;
   
@@ -75,7 +76,13 @@ const ProductCard = ({ product, onProductUpdate }: ProductCardProps) => {
         <CardFooter className="p-4 pt-0 flex justify-between">
           {isOwner ? (
             <div className="flex gap-2 w-full">
-              <EditItemDialog product={product} onSuccess={onProductUpdate} />
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setEditOpen(true)}
+              >
+                Edit
+              </Button>
               <Button 
                 variant="destructive" 
                 className="flex-1"
@@ -108,14 +115,25 @@ const ProductCard = ({ product, onProductUpdate }: ProductCardProps) => {
         }}
       />
       
+      {/* Edit Item Dialog */}
+      {isOwner && (
+        <EditItemDialog 
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          product={product}
+          onSuccess={onProductUpdate}
+        />
+      )}
+      
       {/* Message Seller Dialog */}
       {!isOwner && (
         <MessageSellerDialog 
-          open={messageOpen}
-          onOpenChange={setMessageOpen}
           productId={product.id}
           productTitle={product.title}
           sellerId={product.seller_id || ""}
+          trigger={
+            <span style={{ display: 'none' }}></span>
+          }
         />
       )}
     </>

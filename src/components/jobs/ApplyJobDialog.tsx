@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,16 +14,23 @@ interface ApplyJobDialogProps {
   jobTitle: string;
   company: string;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface ApplicationFormValues {
   coverLetter: string;
 }
 
-export function ApplyJobDialog({ jobId, jobTitle, company, trigger }: ApplyJobDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ApplyJobDialog({ jobId, jobTitle, company, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: ApplyJobDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  
+  // Use either controlled or internal state
+  const isControlled = controlledOpen !== undefined && setControlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? setControlledOpen : setInternalOpen;
 
   const form = useForm<ApplicationFormValues>({
     defaultValues: {
