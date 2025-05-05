@@ -144,7 +144,7 @@ const ViewDetails = ({
         </div>
         
         {/* Details Section */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 py-[65px] mx-[33px] rounded-xl my-0">
           {renderDetails()}
           
           {/* Contact Button */}
