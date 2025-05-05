@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +42,10 @@ const Jobs = () => {
   const { user } = useAuth();
   const { saveItem, unsaveItem, isItemSaved } = useSavedItems();
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -242,7 +245,11 @@ const Jobs = () => {
           
           <div className="space-y-4">
             {filteredJobs.length > 0 ? filteredJobs.map(job => (
-              <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <Card key={job.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedJob(job);
+                  setDetailsOpen(true);
+                }}>
                 <div className="flex flex-col md:flex-row">
                   <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start">
                     <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -287,7 +294,7 @@ const Jobs = () => {
                         </div>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         {user && !isEmployer && (
                           <>
                             <Button 
@@ -328,7 +335,8 @@ const Jobs = () => {
                         {(isEmployer || !user) && (
                           <Button 
                             className="bg-ustp-blue text-white hover:bg-ustp-darkblue bg-gradient-to-r from-blue-900 to-blue-700 hover:brightness-95 px-6 py-2 rounded-lg shadow-md"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (!user) {
                                 toast({
                                   title: "Authentication required",
@@ -363,6 +371,45 @@ const Jobs = () => {
       </main>
       <Footer />
       <Toaster />
+      
+      {/* Job Details Modal */}
+      {selectedJob && (
+        <ViewDetails 
+          open={detailsOpen} 
+          onOpenChange={setDetailsOpen} 
+          item={selectedJob} 
+          itemType="job" 
+          onContactClick={() => {
+            if (user && !isEmployer) {
+              setDetailsOpen(false);
+              setApplyOpen(true);
+            } else if (!user) {
+              toast({
+                title: "Authentication required",
+                description: "Please sign in to apply for jobs",
+                variant: "destructive",
+              });
+            } else if (isEmployer) {
+              toast({
+                title: "Employer account",
+                description: "Employers cannot apply for jobs",
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
+      
+      {/* Apply Job Dialog */}
+      {selectedJob && user && !isEmployer && (
+        <ApplyJobDialog 
+          jobId={selectedJob.id} 
+          jobTitle={selectedJob.title} 
+          company={selectedJob.company}
+          open={applyOpen}
+          onOpenChange={setApplyOpen}
+        />
+      )}
     </div>
   );
 };
