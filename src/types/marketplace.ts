@@ -9,7 +9,7 @@ export interface Product {
   category: string;
   condition: string;
   image: string;
-  image_url?: string; // Add this property
-  seller_name?: string; // Add this property
+  image_url?: string; 
+  seller_name?: string; 
   createdAt: string;
 }
