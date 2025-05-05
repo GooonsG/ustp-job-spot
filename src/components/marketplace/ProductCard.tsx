@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ViewDetails from '@/components/shared/ViewDetails';
+import { MessageSquare, Edit, Trash2 } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -47,57 +48,62 @@ const ProductCard = ({ product, onProductUpdate }: ProductCardProps) => {
 
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 rounded-xl border border-gray-100 flex flex-col h-full">
         <div 
-          className="h-48 overflow-hidden cursor-pointer"
+          className="h-56 overflow-hidden cursor-pointer relative"
           onClick={() => setDetailsOpen(true)}
         >
           <img
             src={product.image || "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"}
             alt={product.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/placeholder.svg";
             }}
           />
+          <div className="absolute bottom-0 left-0 right-0 px-4 py-2 bg-gradient-to-t from-black/50 to-transparent">
+            <p className="text-white font-medium text-xl">${product.price.toFixed(2)}</p>
+          </div>
         </div>
         <CardContent 
-          className="p-4 cursor-pointer"
+          className="p-5 cursor-pointer flex-grow"
           onClick={() => setDetailsOpen(true)}
         >
-          <h3 className="text-lg font-semibold line-clamp-1">{product.title}</h3>
-          <p className="text-green-600 font-semibold">${product.price.toFixed(2)}</p>
-          <p className="text-sm text-gray-600 line-clamp-2 mt-1">{product.description}</p>
-          <div className="flex justify-between mt-2 text-xs text-gray-500">
-            <span>{product.condition}</span>
-            <span>{product.category}</span>
+          <h3 className="text-lg font-semibold line-clamp-1 mb-1">{product.title}</h3>
+          <p className="text-sm text-gray-600 line-clamp-2 mb-3">{product.description}</p>
+          <div className="flex justify-between text-xs font-medium">
+            <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">{product.condition}</span>
+            <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">{product.category}</span>
           </div>
         </CardContent>
-        <CardFooter className="p-4 pt-0 flex justify-between">
+        <CardFooter className="p-5 pt-0 flex justify-between border-t border-gray-100 mt-auto">
           {isOwner ? (
             <div className="flex gap-2 w-full">
               <Button 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 rounded-lg font-medium"
                 onClick={() => setEditOpen(true)}
               >
+                <Edit className="w-4 h-4 mr-2" />
                 Edit
               </Button>
               <Button 
                 variant="destructive" 
-                className="flex-1"
+                className="flex-1 rounded-lg font-medium"
                 onClick={handleDelete}
                 disabled={loading}
               >
+                <Trash2 className="w-4 h-4 mr-2" />
                 {loading ? 'Deleting...' : 'Delete'}
               </Button>
             </div>
           ) : (
             <Button 
-              className="w-full bg-ustp-blue text-white hover:bg-ustp-darkblue"
+              className="w-full bg-ustp-blue hover:bg-ustp-darkblue text-white font-medium rounded-lg shadow-sm transition-all duration-300"
               onClick={() => setMessageOpen(true)}
             >
-              Contact Seller
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Message Seller
             </Button>
           )}
         </CardFooter>
@@ -131,9 +137,8 @@ const ProductCard = ({ product, onProductUpdate }: ProductCardProps) => {
           productId={product.id}
           productTitle={product.title}
           sellerId={product.seller_id || ""}
-          trigger={
-            <span style={{ display: 'none' }}></span>
-          }
+          open={messageOpen}
+          onOpenChange={setMessageOpen}
         />
       )}
     </>

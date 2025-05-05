@@ -5,9 +5,11 @@ export interface Product {
   description: string;
   price: number;
   seller: string;
-  seller_id?: string; // Add seller_id as an optional property
+  seller_id?: string;
+  seller_name?: string;
   category: string;
   condition: string;
   image: string;
+  image_url?: string;
   createdAt: string;
 }

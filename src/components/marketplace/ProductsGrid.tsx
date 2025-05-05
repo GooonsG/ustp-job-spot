@@ -9,7 +9,7 @@ interface ProductsGridProps {
 
 const ProductsGrid = ({ products, onProductUpdate }: ProductsGridProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {products.length > 0 ? (
         products.map((product) => (
           <ProductCard 
@@ -19,9 +19,9 @@ const ProductsGrid = ({ products, onProductUpdate }: ProductsGridProps) => {
           />
         ))
       ) : (
-        <div className="col-span-3 text-center py-12 animate-fade-in">
-          <h3 className="text-xl font-semibold text-gray-600">No items found</h3>
-          <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+        <div className="col-span-full text-center py-16 bg-white/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
+          <h3 className="text-xl font-medium text-gray-600 mb-2">No items found</h3>
+          <p className="text-gray-500">Try adjusting your search or filters</p>
         </div>
       )}
     </div>

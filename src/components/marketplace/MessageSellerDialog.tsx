@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,8 @@ interface MessageSellerDialogProps {
   productId: string;
   productTitle: string;
   sellerId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   trigger?: React.ReactNode;
 }
 
@@ -20,8 +23,7 @@ interface MessageFormValues {
   message: string;
 }
 
-export function MessageSellerDialog({ productId, productTitle, sellerId, trigger }: MessageSellerDialogProps) {
-  const [open, setOpen] = useState(false);
+export function MessageSellerDialog({ productId, productTitle, sellerId, open, onOpenChange, trigger }: MessageSellerDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
@@ -61,7 +63,7 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, trigger
       });
       
       form.reset();
-      setOpen(false);
+      onOpenChange(false);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -75,35 +77,32 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, trigger
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Message Seller
-          </Button>
+          <span style={{ display: 'none' }}></span>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader>
-          <DialogTitle>Message About {productTitle}</DialogTitle>
+      <DialogContent className="sm:max-w-[525px] rounded-xl shadow-lg border-gray-200">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl font-semibold text-ustp-darkblue">Message About {productTitle}</DialogTitle>
           <DialogDescription>
-            Send a message to the seller about this item.
+            Send a message to the seller about this item. They'll respond through the messaging system.
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField
               control={form.control}
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Message</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Your Message</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Hi, I'm interested in this item..." 
-                      className="min-h-[150px] resize-none"
+                      placeholder="Hi, I'm interested in this item. Is it still available?" 
+                      className="min-h-[150px] resize-none rounded-lg focus:ring-ustp-blue"
                       {...field} 
                     />
                   </FormControl>
@@ -112,18 +111,30 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, trigger
               )}
             />
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="flex gap-3 mt-6">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="rounded-lg font-medium"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="rounded-lg font-medium bg-ustp-blue hover:bg-ustp-darkblue text-white"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sending...
                   </>
                 ) : (
-                  'Send Message'
+                  <>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Send Message
+                  </>
                 )}
               </Button>
             </DialogFooter>
@@ -132,4 +143,4 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, trigger
       </DialogContent>
     </Dialog>
   );
-}
+};
