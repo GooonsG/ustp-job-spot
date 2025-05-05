@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthProvider';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
-import { Home, User, LogOut, Bell, MessageSquare, MailIcon, ShoppingCart, Briefcase } from 'lucide-react';
+import { Home, User, LogOut, Bell, MessageSquare, MailIcon, ShoppingCart, Briefcase, BookmarkCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -83,7 +83,13 @@ export default function NavbarUser() {
 
   return (
     <div className="flex items-center gap-4">
-      <Button variant="ghost" size="icon" onClick={() => navigate('/messages')} className="relative">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={() => navigate('/messages')} 
+        className="relative"
+        aria-label="Messages"
+      >
         <MessageSquare className="h-5 w-5" />
         {unreadCount > 0 && (
           <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-xs">
@@ -114,6 +120,10 @@ export default function NavbarUser() {
             {unreadCount > 0 && (
               <Badge className="ml-auto bg-red-500">{unreadCount}</Badge>
             )}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/saved-items')}>
+            <BookmarkCheck className="mr-2 h-4 w-4" />
+            <span>Saved Items</span>
           </DropdownMenuItem>
           {isStudent && (
             <DropdownMenuItem onClick={() => navigate('/marketplace')}>

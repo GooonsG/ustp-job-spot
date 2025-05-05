@@ -1,3 +1,4 @@
+
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,15 +8,57 @@ import traillogo from '../../image/traillogo.png';
 import { useAuth } from '@/context/AuthProvider';
 import { useUserRole } from '@/hooks/useUserRole';
 import logo from '../../image/iconavatar.jpg';
+import { MessageSquare, BookmarkCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
 const NavBar = () => {
   const navigate = useNavigate();
-  const {
-    user,
-    signOut
-  } = useAuth();
-  const {
-    isEmployer
-  } = useUserRole();
+  const { user, signOut } = useAuth();
+  const { isEmployer } = useUserRole();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Fetch unread messages count
+    const fetchUnreadMessages = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_user_messages', {
+          p_user_id: user.id
+        });
+
+        if (!error && data) {
+          const count = data.reduce((total: number, conv: any) => total + conv.unread_count, 0);
+          setUnreadCount(count);
+        }
+      } catch (err) {
+        console.error('Error fetching unread messages:', err);
+      }
+    };
+
+    fetchUnreadMessages();
+
+    // Setup realtime subscription for messages
+    const channel = supabase.channel('messages-badge-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'marketplace_messages'
+      }, () => fetchUnreadMessages())
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'job_messages'
+      }, () => fetchUnreadMessages())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -28,7 +71,9 @@ const NavBar = () => {
       });
     }
   };
+  
   const userInitials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'US';
+  
   return <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
@@ -56,6 +101,19 @@ const NavBar = () => {
               </svg>
               Jobs
             </NavLink>
+            {user && (
+              <NavLink to="/messages" className={({
+                isActive
+              }) => `flex items-center transition-colors relative ${isActive ? 'text-ustp-blue font-bold' : 'text-gray-700 hover:text-ustp-blue'}`}>
+                <MessageSquare className="h-5 w-5 mr-1" />
+                Messages
+                {unreadCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </NavLink>
+            )}
             {user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -84,6 +142,20 @@ const NavBar = () => {
                     <Link to="/dashboard" className="w-full">Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
+                    <Link to="/messages" className="w-full flex items-center">
+                      Messages
+                      {unreadCount > 0 && (
+                        <Badge className="ml-auto bg-red-500 text-white">{unreadCount}</Badge>
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/saved-items" className="w-full flex items-center">
+                      <BookmarkCheck className="h-4 w-4 mr-2" />
+                      Saved Items
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
                     <Link to="/profile" className="w-full">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -106,4 +178,5 @@ const NavBar = () => {
       </div>
     </nav>;
 };
+
 export default NavBar;
