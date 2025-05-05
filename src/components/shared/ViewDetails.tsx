@@ -134,7 +134,7 @@ const ViewDetails = ({
                   <AspectRatio ratio={16 / 9} className="h-full">
                     <img src={img} alt={`Image ${index + 1}`} onError={e => {
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }} className="w-full h-full object-cover" />
+                }} className="w-full h-500 object-contain" />
                   </AspectRatio>
                 </CarouselItem>)}
             </CarouselContent>
