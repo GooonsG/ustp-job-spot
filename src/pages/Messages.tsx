@@ -131,6 +131,12 @@ const Messages = () => {
     return name.charAt(0).toUpperCase();
   };
 
+  // Function to get sender name display
+  const getSenderName = (message: any, isSender: boolean) => {
+    if (isSender) return 'You';
+    return message.senderEmail ? message.senderEmail.split('@')[0] : 'Unknown';
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -256,33 +262,41 @@ const Messages = () => {
                         {messages.map((message, index) => {
                           const showAvatar = index === 0 || 
                             (messages[index - 1] && messages[index - 1].senderId !== message.senderId);
+                          const showSenderName = showAvatar;
                           
                           return (
                             <motion.div 
                               key={message.id} 
-                              className={`flex ${message.isSender ? 'justify-end' : 'justify-start'}`}
+                              className={`flex flex-col ${message.isSender ? 'items-end' : 'items-start'}`}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.2 }}
                             >
-                              {!message.isSender && showAvatar && (
-                                <Avatar className="h-8 w-8 mr-2 mt-1 flex-shrink-0">
-                                  <AvatarFallback>{getAvatarFallback(message.senderEmail)}</AvatarFallback>
-                                </Avatar>
+                              {showSenderName && (
+                                <span className={`text-xs text-gray-500 mb-1 ${message.isSender ? 'text-right' : 'text-left'} px-2`}>
+                                  {getSenderName(message, message.isSender)}
+                                </span>
                               )}
-                              {!message.isSender && !showAvatar && (
-                                <div className="w-8 mr-2" />
-                              )}
-                              <div 
-                                className={`max-w-[80%] p-3 ${
-                                  message.isSender 
-                                    ? 'bg-ustp-blue text-white rounded-t-lg rounded-bl-lg' 
-                                    : 'bg-gray-200 text-gray-800 rounded-t-lg rounded-br-lg'
-                                }`}
-                              >
-                                <p className="text-sm whitespace-pre-wrap break-words">{message.message}</p>
-                                <div className={`text-xs mt-1 text-right ${message.isSender ? 'text-blue-100' : 'text-gray-500'}`}>
-                                  {formatMessageTime(message.createdAt)}
+                              <div className={`flex ${message.isSender ? 'justify-end' : 'justify-start'} w-full`}>
+                                {!message.isSender && showAvatar && (
+                                  <Avatar className="h-8 w-8 mr-2 mt-1 flex-shrink-0">
+                                    <AvatarFallback>{getAvatarFallback(message.senderEmail)}</AvatarFallback>
+                                  </Avatar>
+                                )}
+                                {!message.isSender && !showAvatar && (
+                                  <div className="w-8 mr-2" />
+                                )}
+                                <div 
+                                  className={`max-w-[80%] p-3 ${
+                                    message.isSender 
+                                      ? 'bg-ustp-blue text-white rounded-t-lg rounded-bl-lg' 
+                                      : 'bg-gray-200 text-gray-800 rounded-t-lg rounded-br-lg'
+                                  }`}
+                                >
+                                  <p className="text-sm whitespace-pre-wrap break-words">{message.message}</p>
+                                  <div className={`text-xs mt-1 text-right ${message.isSender ? 'text-blue-100' : 'text-gray-500'}`}>
+                                    {formatMessageTime(message.createdAt)}
+                                  </div>
                                 </div>
                               </div>
                             </motion.div>
