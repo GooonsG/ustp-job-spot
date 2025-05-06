@@ -215,7 +215,7 @@ const Jobs = () => {
             setDetailsOpen(true);
           }}>
                 <div className="flex flex-col md:flex-row">
-                  <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start">
+                  <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start mx-0">
                     <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                       <img src={job.logo || (job.logos && job.logos.length > 0 ? job.logos[0] : "/placeholder.svg")} alt={job.company} onError={e => {
                     (e.target as HTMLImageElement).src = "/placeholder.svg";
