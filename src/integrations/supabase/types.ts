@@ -93,7 +93,7 @@ export type Database = {
           employer_id: string
           id: string
           location: string
-          logo: string | null
+          logos: string[] | null
           posted_date: string | null
           salary: string
           tags: string[]
@@ -107,7 +107,7 @@ export type Database = {
           employer_id: string
           id?: string
           location: string
-          logo?: string | null
+          logos?: string[] | null
           posted_date?: string | null
           salary: string
           tags?: string[]
@@ -121,7 +121,7 @@ export type Database = {
           employer_id?: string
           id?: string
           location?: string
-          logo?: string | null
+          logos?: string[] | null
           posted_date?: string | null
           salary?: string
           tags?: string[]
@@ -137,7 +137,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
-          image_url: string | null
+          images: string[] | null
           price: number
           seller_id: string
           seller_name: string
@@ -150,7 +150,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
-          image_url?: string | null
+          images?: string[] | null
           price: number
           seller_id: string
           seller_name: string
@@ -163,7 +163,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
-          image_url?: string | null
+          images?: string[] | null
           price?: number
           seller_id?: string
           seller_name?: string

@@ -9,7 +9,7 @@ export interface Product {
   seller_name?: string;
   category: string;
   condition: string;
-  image: string;
-  image_url?: string;
+  images: string[];
+  image?: string; // For backward compatibility
   createdAt: string;
 }

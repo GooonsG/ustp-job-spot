@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -18,7 +19,7 @@ interface Job {
   salary: string;
   deadline: string;
   posted_date: string;
-  logo: string;
+  logos: string[];
   tags: string[];
   employer_id: string;
 }
@@ -31,6 +32,7 @@ interface ViewDetailsProps {
   itemType: 'product' | 'job';
   onContactClick?: () => void;
 }
+
 const ViewDetails = ({
   open,
   onOpenChange,
@@ -39,17 +41,24 @@ const ViewDetails = ({
   onContactClick
 }: ViewDetailsProps) => {
   const [images, setImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Set up images when component mounts or item changes
   useEffect(() => {
     if (itemType === 'product') {
-      // For products, use the image from the product
+      // For products, use the images from the product
       const product = item as Product;
-      setImages([product.image || "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"]);
+      const productImages = product.images && product.images.length > 0 
+        ? product.images 
+        : ["https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
+      setImages(productImages);
     } else {
-      // For jobs, use the logo and some placeholder images to demonstrate carousel
+      // For jobs, use the logos and some placeholder images to demonstrate carousel
       const job = item as Job;
-      setImages([job.logo, "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60", "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"]);
+      const jobImages = job.logos && job.logos.length > 0 
+        ? job.logos 
+        : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60", "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
+      setImages(jobImages);
     }
   }, [item, itemType]);
 
@@ -120,6 +129,14 @@ const ViewDetails = ({
         </div>;
     }
   };
+
+  const renderPlaceholder = () => (
+    <div className="flex flex-col items-center justify-center h-full bg-gray-100 text-gray-400">
+      <ImageIcon size={48} />
+      <p className="mt-2">No image available</p>
+    </div>
+  );
+
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-full p-0 h-[90vh] flex flex-col">
         <Button variant="ghost" size="icon" className="absolute right-4 top-4 z-50 rounded-full bg-black/30 text-white hover:bg-black/50" onClick={() => onOpenChange(false)}>
@@ -130,13 +147,26 @@ const ViewDetails = ({
         <div className="bg-black h-1/2">
           <Carousel className="w-full h-full">
             <CarouselContent className="h-full">
-              {images.map((img, index) => <CarouselItem key={index} className="h-full">
-                  <AspectRatio ratio={16 / 9} className="h-full">
-                    <img src={img} alt={`Image ${index + 1}`} onError={e => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }} className="w-full h-full object-contain bg-white" />
-                  </AspectRatio>
-                </CarouselItem>)}
+              {images.length > 0 ? (
+                images.map((img, index) => (
+                  <CarouselItem key={index} className="h-full">
+                    <AspectRatio ratio={16 / 9} className="h-full">
+                      <img 
+                        src={img} 
+                        alt={`Image ${index + 1}`} 
+                        onError={e => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }} 
+                        className="w-full h-full object-contain bg-white" 
+                      />
+                    </AspectRatio>
+                  </CarouselItem>
+                ))
+              ) : (
+                <CarouselItem className="h-full">
+                  {renderPlaceholder()}
+                </CarouselItem>
+              )}
             </CarouselContent>
             <CarouselPrevious className="left-4" />
             <CarouselNext className="right-4" />
@@ -150,11 +180,12 @@ const ViewDetails = ({
           {/* Contact Button */}
           {onContactClick && <div className="pt-4">
               <Button className="w-full bg-ustp-blue text-white hover:bg-ustp-darkblue" onClick={onContactClick}>
-                {itemType === 'product' ? 'Contact Seller' : 'Apply for Job'}
+                {itemType === 'product' ? 'Message Seller' : 'Apply for Job'}
               </Button>
             </div>}
         </div>
       </DialogContent>
     </Dialog>;
 };
+
 export default ViewDetails;

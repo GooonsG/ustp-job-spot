@@ -8,9 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X, Upload, Plus, Image as ImageIcon } from 'lucide-react';
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -37,6 +39,8 @@ const conditions = [
   "Used - Poor",
 ];
 
+const MAX_IMAGES = 4;
+
 interface EditItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -46,8 +50,9 @@ interface EditItemDialogProps {
 
 export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditItemDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(product.image);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(product.images || []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,36 +65,71 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
+  // Reset form when product changes
+  useEffect(() => {
+    form.reset({
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      condition: product.condition,
+    });
+    setExistingImages(product.images || []);
+    setNewImages([]);
+    setNewImagePreviews([]);
+  }, [product, form]);
+
+  const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      const totalImageCount = existingImages.length + newImages.length + files.length;
+      
+      if (totalImageCount > MAX_IMAGES) {
+        toast.error(`You can only have up to ${MAX_IMAGES} images in total`);
+        return;
+      }
+      
+      const filePreviews = files.map(file => URL.createObjectURL(file));
+      
+      setNewImages(prev => [...prev, ...files]);
+      setNewImagePreviews(prev => [...prev, ...filePreviews]);
     }
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(newImagePreviews[index]);
+    setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      let imageUrl = product.image;
+      const updatedImageUrls = [...existingImages];
 
-      // Upload new image if one was selected
-      if (image) {
-        const fileExt = image.name.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = `${product.seller_id}/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('marketplace')
-          .upload(filePath, image);
+      // Upload new images if any were selected
+      if (newImages.length > 0) {
+        for (const image of newImages) {
+          const fileExt = image.name.split('.').pop();
+          const fileName = `${uuidv4()}.${fileExt}`;
+          const filePath = `${product.seller_id}/${fileName}`;
           
-        if (uploadError) throw uploadError;
-        
-        const { data } = supabase.storage
-          .from('marketplace')
-          .getPublicUrl(filePath);
+          const { error: uploadError } = await supabase.storage
+            .from('marketplace')
+            .upload(filePath, image);
+            
+          if (uploadError) throw uploadError;
           
-        imageUrl = data.publicUrl;
+          const { data } = supabase.storage
+            .from('marketplace')
+            .getPublicUrl(filePath);
+            
+          updatedImageUrls.push(data.publicUrl);
+        }
       }
 
       // Update the item in the database
@@ -101,7 +141,7 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
           price: values.price,
           category: values.category,
           condition: values.condition,
-          image_url: imageUrl,
+          images: updatedImageUrls,
           updated_at: new Date().toISOString(),
         })
         .eq('id', product.id);
@@ -121,7 +161,7 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Item</DialogTitle>
         </DialogHeader>
@@ -147,7 +187,7 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Textarea rows={4} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -216,20 +256,86 @@ export function EditItemDialog({ open, onOpenChange, product, onSuccess }: EditI
             />
 
             <div className="space-y-2">
-              <FormLabel>Item Image</FormLabel>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="cursor-pointer"
-              />
-              {imagePreview && (
-                <div className="mt-2 flex justify-center">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="max-h-40 rounded-md object-contain" 
-                  />
+              <p className="text-sm font-medium">Images ({existingImages.length + newImages.length} of {MAX_IMAGES})</p>
+              
+              {/* Existing images */}
+              {existingImages.length > 0 && (
+                <div>
+                  <h4 className="text-sm text-gray-500 mb-2">Current Images</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {existingImages.map((imgUrl, index) => (
+                      <div key={`existing-${index}`} className="relative group">
+                        <img 
+                          src={imgUrl} 
+                          alt={`Item ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded-md" 
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* New images */}
+              {newImagePreviews.length > 0 && (
+                <div>
+                  <h4 className="text-sm text-gray-500 mb-2">New Images</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {newImagePreviews.map((preview, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <img 
+                          src={preview} 
+                          alt={`New image ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded-md" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Upload button */}
+              {existingImages.length + newImages.length < MAX_IMAGES && (
+                <div>
+                  <Label 
+                    htmlFor="new-images" 
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                      <p className="text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Add {MAX_IMAGES - (existingImages.length + newImages.length)} more image(s)
+                      </p>
+                    </div>
+                    <Input
+                      id="new-images"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleNewImageChange}
+                      className="hidden"
+                    />
+                  </Label>
                 </div>
               )}
             </div>

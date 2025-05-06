@@ -46,7 +46,9 @@ const Marketplace = () => {
         seller_id: item.seller_id, // Include seller_id
         category: item.category,
         condition: item.condition,
-        image: item.image_url || "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+        images: item.images || [],
+        // For backwards compatibility if needed
+        image: item.images && item.images.length > 0 ? item.images[0] : "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
         createdAt: item.created_at
       }));
 
