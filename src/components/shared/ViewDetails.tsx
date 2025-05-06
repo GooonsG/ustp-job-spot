@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,22 +7,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Product, Job } from '@/types/marketplace';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-
-// Type for job items
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  description: string;
-  type: string;
-  salary: string;
-  deadline: string;
-  posted_date: string;
-  logos: string[];
-  tags: string[];
-  employer_id: string;
-}
 
 // Generic type for the ViewDetails component
 interface ViewDetailsProps {

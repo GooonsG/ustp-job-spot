@@ -199,8 +199,8 @@ const Dashboard = () => {
                           <div key={item.id} className="flex items-center space-x-4 p-2 hover:bg-gray-50 rounded-md cursor-pointer"
                             onClick={() => handleViewListingDetails(item.id)}>
                             <div className="w-12 h-12 rounded overflow-hidden bg-gray-200">
-                              {item.image_url ? (
-                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                              {item.images && item.images.length > 0 ? (
+                                <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">No img</div>
                               )}
@@ -276,8 +276,8 @@ const Dashboard = () => {
                       {marketplaceListings.map(item => (
                         <div key={item.id} className="flex items-center space-x-4 p-3 border rounded-md">
                           <div className="w-16 h-16 rounded overflow-hidden bg-gray-200">
-                            {item.image_url ? (
-                              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                            {item.images && item.images.length > 0 ? (
+                              <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-400">No image</div>
                             )}

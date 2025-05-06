@@ -24,7 +24,7 @@ export interface Job {
   salary: string;
   deadline: string;
   posted_date: string;
-  logos?: string[]; // Updated to match database schema
+  logos: string[];
   logo?: string; // For backward compatibility
   tags: string[];
   employer_id: string;
