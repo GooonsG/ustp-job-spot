@@ -17,21 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { useSavedItems } from '@/hooks/useSavedItems';
 import { Bookmark, MessageSquare } from 'lucide-react';
 import ViewDetails from '@/components/shared/ViewDetails';
-
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  description: string;
-  type: string;
-  salary: string;
-  deadline: string;
-  posted_date: string;
-  logo: string;
-  tags: string[];
-  employer_id: string;
-}
+import { Job } from '@/types/marketplace';
 
 const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -69,8 +55,14 @@ const Jobs = () => {
       return;
     }
     
-    setJobs(data || []);
-    setFilteredJobs(data || []);
+    // Transform data to match the Job interface
+    const jobsWithLogo = data?.map(job => ({
+      ...job,
+      logo: job.logos && job.logos.length > 0 ? job.logos[0] : undefined
+    })) || [];
+    
+    setJobs(jobsWithLogo);
+    setFilteredJobs(jobsWithLogo);
   };
 
   const checkSavedJobs = async () => {
@@ -255,7 +247,7 @@ const Jobs = () => {
                   <div className="p-4 md:w-1/4 flex items-center justify-center md:justify-start">
                     <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                       <img 
-                        src={job.logo} 
+                        src={job.logo || (job.logos && job.logos.length > 0 ? job.logos[0] : "/placeholder.svg")} 
                         alt={job.company} 
                         onError={e => {
                           (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -378,7 +370,10 @@ const Jobs = () => {
         <ViewDetails 
           open={detailsOpen} 
           onOpenChange={setDetailsOpen} 
-          item={selectedJob} 
+          item={{
+            ...selectedJob,
+            logos: selectedJob.logos || []
+          }}
           itemType="job" 
           onContactClick={() => {
             if (user && !isEmployer) {

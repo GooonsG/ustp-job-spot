@@ -13,3 +13,19 @@ export interface Product {
   image?: string; // For backward compatibility
   createdAt: string;
 }
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  type: string;
+  salary: string;
+  deadline: string;
+  posted_date: string;
+  logos?: string[]; // Updated to match database schema
+  logo?: string; // For backward compatibility
+  tags: string[];
+  employer_id: string;
+}

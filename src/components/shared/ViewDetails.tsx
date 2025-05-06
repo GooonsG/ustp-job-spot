@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { X, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Product } from '@/types/marketplace';
+import { Product, Job } from '@/types/marketplace';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 // Type for job items
@@ -50,14 +49,14 @@ const ViewDetails = ({
       const product = item as Product;
       const productImages = product.images && product.images.length > 0 
         ? product.images 
-        : ["https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
+        : [product.image || "https://images.unsplash.com/photo-1588580000645-f43a65d97800?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
       setImages(productImages);
     } else {
-      // For jobs, use the logos and some placeholder images to demonstrate carousel
+      // For jobs, use the logos
       const job = item as Job;
       const jobImages = job.logos && job.logos.length > 0 
         ? job.logos 
-        : ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60", "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
+        : [job.logo || "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"];
       setImages(jobImages);
     }
   }, [item, itemType]);
@@ -137,7 +136,8 @@ const ViewDetails = ({
     </div>
   );
 
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-full p-0 h-[90vh] flex flex-col">
         <Button variant="ghost" size="icon" className="absolute right-4 top-4 z-50 rounded-full bg-black/30 text-white hover:bg-black/50" onClick={() => onOpenChange(false)}>
           <X className="h-4 w-4" />
@@ -185,7 +185,8 @@ const ViewDetails = ({
             </div>}
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
 
 export default ViewDetails;

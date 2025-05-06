@@ -10,7 +10,7 @@ export type MarketplaceListing = {
   status: 'active' | 'sold';
   postedDate: string;
   views?: number;
-  image_url: string | null;
+  images?: string[];
   seller_id: string;
 };
 
@@ -45,7 +45,7 @@ export function useMarketplaceListings() {
           status: 'active' as const, // We'd need to add a status field to the database for sold items
           postedDate: item.created_at,
           views: 0, // This would require a views tracking table
-          image_url: item.image_url,
+          images: item.images || [],
           seller_id: item.seller_id
         }));
 
