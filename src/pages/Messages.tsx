@@ -125,6 +125,12 @@ const Messages = () => {
       <ShoppingBag className="h-4 w-4 text-green-500" />;
   };
 
+  // Function to safely get the first character of a name with null check
+  const getAvatarFallback = (name: string | null | undefined) => {
+    if (!name) return '?';
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -177,6 +183,7 @@ const Messages = () => {
                     handleUserSelect={handleUserSelect}
                     formatRelativeTime={formatRelativeTime}
                     getConversationIcon={getConversationIcon}
+                    getAvatarFallback={getAvatarFallback}
                   />
                 </motion.div>
               )}
@@ -197,6 +204,7 @@ const Messages = () => {
                 handleUserSelect={handleUserSelect}
                 formatRelativeTime={formatRelativeTime}
                 getConversationIcon={getConversationIcon}
+                getAvatarFallback={getAvatarFallback}
               />
             </div>
             
@@ -208,7 +216,7 @@ const Messages = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <Avatar className="h-10 w-10 mr-3">
-                          <AvatarFallback>{currentConversation.otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback>{getAvatarFallback(currentConversation.otherUserName)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <h2 className="font-semibold text-lg">{currentConversation.otherUserName}</h2>
@@ -259,7 +267,7 @@ const Messages = () => {
                             >
                               {!message.isSender && showAvatar && (
                                 <Avatar className="h-8 w-8 mr-2 mt-1 flex-shrink-0">
-                                  <AvatarFallback>{message.senderEmail.charAt(0).toUpperCase()}</AvatarFallback>
+                                  <AvatarFallback>{getAvatarFallback(message.senderEmail)}</AvatarFallback>
                                 </Avatar>
                               )}
                               {!message.isSender && !showAvatar && (
@@ -354,7 +362,8 @@ const ConversationsList = ({
   fetchMessages,
   handleUserSelect,
   formatRelativeTime,
-  getConversationIcon
+  getConversationIcon,
+  getAvatarFallback
 }) => {
   return (
     <>
@@ -381,7 +390,7 @@ const ConversationsList = ({
                   >
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarFallback>{conversation.otherUserName.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{getAvatarFallback(conversation.otherUserName)}</AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
@@ -427,7 +436,7 @@ const ConversationsList = ({
                   >
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarFallback>{userGroup.userName.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{getAvatarFallback(userGroup.userName)}</AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
