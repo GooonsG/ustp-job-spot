@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useMessages } from '@/hooks/useMessages';
 import { useMessagesView } from '@/hooks/useMessagesView';
@@ -131,10 +130,22 @@ const Messages = () => {
     return name.charAt(0).toUpperCase();
   };
 
-  // Function to get sender name display
+  // Improved function to get sender name display with better null/undefined handling
   const getSenderName = (message: any, isSender: boolean) => {
     if (isSender) return 'You';
-    return message.senderEmail ? message.senderEmail.split('@')[0] : 'Unknown';
+    
+    // If we have sender email, extract the username part before the @ symbol
+    if (message.senderEmail) {
+      const emailParts = message.senderEmail.split('@');
+      if (emailParts.length > 0 && emailParts[0]) {
+        // Format the username for better display - capitalize first letter
+        const username = emailParts[0];
+        return username.charAt(0).toUpperCase() + username.slice(1);
+      }
+    }
+    
+    // Fallback if no email or problem with format
+    return 'User';
   };
 
   return (
