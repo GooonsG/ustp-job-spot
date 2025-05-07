@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { MessageSquare } from 'lucide-react';
 import { LoadingIndicator, ErrorMessage } from './LoadingErrorStates';
 import { MessageEmployerDialog } from '../jobs/MessageEmployerDialog';
 import { useAuth } from '@/context/AuthProvider';

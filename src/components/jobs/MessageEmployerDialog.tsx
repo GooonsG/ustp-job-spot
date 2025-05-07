@@ -34,6 +34,16 @@ interface Message {
   isSender: boolean;
 }
 
+// Type for the database response to better handle the conversion
+interface MessageResponse {
+  id: string;
+  sender_id: string;
+  sender_email: string;
+  message: string;
+  created_at: string;
+  is_sender: boolean;
+}
+
 export function MessageEmployerDialog({ 
   jobId, 
   jobTitle, 
@@ -107,7 +117,17 @@ export function MessageEmployerDialog({
         if (messagesError) throw messagesError;
         
         if (data) {
-          setMessages(data);
+          // Transform the data from snake_case to camelCase
+          const formattedMessages: Message[] = (data as MessageResponse[]).map(msg => ({
+            id: msg.id,
+            senderId: msg.sender_id,
+            senderEmail: msg.sender_email,
+            message: msg.message,
+            createdAt: msg.created_at,
+            isSender: msg.is_sender
+          }));
+          
+          setMessages(formattedMessages);
         }
       } else {
         // Check if there's an existing application
@@ -134,7 +154,17 @@ export function MessageEmployerDialog({
           if (messagesError) throw messagesError;
           
           if (data) {
-            setMessages(data);
+            // Transform the data from snake_case to camelCase
+            const formattedMessages: Message[] = (data as MessageResponse[]).map(msg => ({
+              id: msg.id,
+              senderId: msg.sender_id,
+              senderEmail: msg.sender_email,
+              message: msg.message,
+              createdAt: msg.created_at,
+              isSender: msg.is_sender
+            }));
+            
+            setMessages(formattedMessages);
           }
         }
       }
