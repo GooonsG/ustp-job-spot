@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '@/components/layout/NavBar';
@@ -6,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 import { useMarketplaceListings } from '@/hooks/useMarketplaceListings';
 import { useJobApplications } from '@/hooks/useJobApplications';
 import { useSavedItems } from '@/hooks/useSavedItems';
@@ -15,6 +17,7 @@ import { Loader2, ExternalLink, Bookmark } from 'lucide-react';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Fetch data using our new hooks
   const { listings: marketplaceListings, loading: listingsLoading, error: listingsError } = useMarketplaceListings();
@@ -77,9 +80,9 @@ const Dashboard = () => {
     if (confirm("Remove this item from your saved items?")) {
       const result = await unsaveItem(savedItemId);
       if (result.success) {
-        toast.success("Item removed from saved items");
+        sonnerToast.success("Item removed from saved items");
       } else {
-        toast.error("Failed to remove item");
+        sonnerToast.error("Failed to remove item");
       }
     }
   };
