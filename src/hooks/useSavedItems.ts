@@ -23,49 +23,50 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
+  const fetchSavedItems = async () => {
     if (!user) {
       setSavedItems([]);
       setLoading(false);
       return;
     }
 
-    const fetchSavedItems = async () => {
-      try {
-        // Use RPC to call the database function
-        const { data, error } = await supabase
-          .rpc('get_saved_items', { 
-            p_user_id: user.id, 
-            p_item_type: itemType 
-          });
+    try {
+      setLoading(true);
+      // Use RPC to call the database function
+      const { data, error } = await supabase
+        .rpc('get_saved_items', { 
+          p_user_id: user.id, 
+          p_item_type: itemType 
+        });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data) {
-          const formattedItems = data.map((item: any) => ({
-            id: item.saved_id,
-            itemId: item.item_id,
-            itemType: item.item_type as 'job' | 'marketplace',
-            title: item.title,
-            company: item.company,
-            salary: item.salary,
-            type: item.job_type,
-            price: item.price,
-            seller: item.seller_name,
-            category: item.category,
-            savedAt: item.created_at
-          }));
+      if (data) {
+        const formattedItems = data.map((item: any) => ({
+          id: item.saved_id,
+          itemId: item.item_id,
+          itemType: item.item_type as 'job' | 'marketplace',
+          title: item.title,
+          company: item.company,
+          salary: item.salary,
+          type: item.job_type,
+          price: item.price,
+          seller: item.seller_name,
+          category: item.category,
+          savedAt: item.created_at
+        }));
 
-          setSavedItems(formattedItems);
-        }
-      } catch (err: any) {
-        console.error('Error fetching saved items:', err);
-        setError('Failed to fetch your saved items');
-      } finally {
-        setLoading(false);
+        setSavedItems(formattedItems);
       }
-    };
+    } catch (err: any) {
+      console.error('Error fetching saved items:', err);
+      setError('Failed to fetch your saved items');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchSavedItems();
   }, [user, itemType]);
 
@@ -106,7 +107,7 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
           savedAt: newItem[0].created_at
         };
         
-        setSavedItems([...savedItems, formattedItem]);
+        setSavedItems(prev => [...prev, formattedItem]);
       }
 
       return { success: true };
@@ -130,7 +131,9 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
       if (error) throw error;
 
       // Update local state
-      setSavedItems(savedItems.filter(item => item.id !== savedItemId));
+      setSavedItems(prev => prev.filter(item => item.id !== savedItemId));
+      // Refresh saved items
+      fetchSavedItems();
       return { success: true };
     } catch (err: any) {
       console.error('Error removing saved item:', err);
@@ -159,5 +162,13 @@ export function useSavedItems(itemType?: 'job' | 'marketplace') {
     }
   };
 
-  return { savedItems, loading, error, saveItem, unsaveItem, isItemSaved };
+  return { 
+    savedItems, 
+    loading, 
+    error, 
+    saveItem, 
+    unsaveItem, 
+    isItemSaved,
+    refreshSavedItems: fetchSavedItems 
+  };
 }
