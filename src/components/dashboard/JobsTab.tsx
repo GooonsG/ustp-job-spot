@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingIndicator, ErrorMessage } from './LoadingErrorStates';
+import { MessageEmployerDialog } from '../jobs/MessageEmployerDialog';
+import { useAuth } from '@/context/AuthProvider';
 
 interface JobsTabProps {
   jobApplications: any[];
@@ -19,6 +21,8 @@ const JobsTab = ({
   handleViewJobDetails,
   handleFindOpportunities,
 }: JobsTabProps) => {
+  const { user } = useAuth();
+  
   return (
     <Card>
       <CardHeader>
@@ -52,13 +56,27 @@ const JobsTab = ({
                       Status: {application.status}
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewJobDetails(application.id)}
-                  >
-                    View Details
-                  </Button>
+                  <div className="flex space-x-2">
+                    <MessageEmployerDialog 
+                      jobId={application.jobId}
+                      jobTitle={application.jobTitle}
+                      employerId={application.employerId || ''}
+                      applicationId={application.id}
+                      trigger={
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Messages
+                        </Button>
+                      }
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewJobDetails(application.id)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

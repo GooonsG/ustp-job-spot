@@ -1,5 +1,5 @@
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const LoadingIndicator = () => (
@@ -18,5 +18,12 @@ export const ErrorMessage = ({ message }: { message: string }) => (
     >
       Try Again
     </Button>
+  </div>
+);
+
+export const NoMessagesState = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
+    <MessageSquare className="h-12 w-12 text-gray-300 mb-3" />
+    <p>{message}</p>
   </div>
 );
