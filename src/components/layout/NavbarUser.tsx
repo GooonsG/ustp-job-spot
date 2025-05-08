@@ -44,17 +44,12 @@ export default function NavbarUser() {
 
     fetchUnreadMessages();
 
-    // Setup realtime subscription for messages
+    // Setup realtime subscription for the unified messages table
     const channel = supabase.channel('messages-badge-updates')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'marketplace_messages'
-      }, () => fetchUnreadMessages())
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'job_messages'
       }, () => fetchUnreadMessages())
       .subscribe();
 

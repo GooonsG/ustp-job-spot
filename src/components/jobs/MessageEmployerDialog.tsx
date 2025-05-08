@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -78,8 +77,8 @@ export function MessageEmployerDialog({
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
-          table: 'job_messages',
-          filter: `application_id=eq.${currentApplicationId}`,
+          table: 'marketplace_messages',
+          filter: `conversation_item_id=eq.${currentApplicationId}`,
         }, () => {
           fetchMessages();
         })
@@ -191,14 +190,15 @@ export function MessageEmployerDialog({
     setIsSubmitting(true);
     
     try {
-      // If we have an application ID, we can send a message directly
+      // If we have an application ID, we can send a message directly using the unified system
       if (currentApplicationId) {
+        // Use the updated send_message function that handles both types
         const { error } = await supabase
-          .from('job_messages')
-          .insert({
-            application_id: currentApplicationId,
-            sender_id: user.id,
-            message: values.message
+          .rpc('send_message', {
+            p_sender_id: user.id,
+            p_conversation_id: currentApplicationId,
+            p_conversation_type: 'job',
+            p_message: values.message
           });
 
         if (error) throw error;
@@ -219,13 +219,13 @@ export function MessageEmployerDialog({
           // Set the current application ID
           setCurrentApplicationId(newApplication[0].id);
           
-          // Now send the message
+          // Now send the message using the unified function
           const { error } = await supabase
-            .from('job_messages')
-            .insert({
-              application_id: newApplication[0].id,
-              sender_id: user.id,
-              message: values.message
+            .rpc('send_message', {
+              p_sender_id: user.id,
+              p_conversation_id: newApplication[0].id,
+              p_conversation_type: 'job',
+              p_message: values.message
             });
 
           if (error) throw error;

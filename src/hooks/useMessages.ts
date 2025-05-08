@@ -75,41 +75,24 @@ export function useMessages() {
 
     fetchConversations();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates for the unified marketplace_messages table
     const channel = supabase.channel('messages-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'marketplace_messages'
       }, payload => {
-        console.log('Marketplace message change received!', payload);
+        console.log('Message change received!', payload);
         fetchConversations();
         
         // If the message belongs to the current conversation, fetch new messages
         if (currentConversation && 
-            currentConversation.conversationType === 'marketplace' && 
             payload.new && 
             typeof payload.new === 'object' && 
-            'product_id' in payload.new && 
-            payload.new.product_id === currentConversation.conversationId) {
-          fetchMessages(currentConversation);
-        }
-      })
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'job_messages'
-      }, payload => {
-        console.log('Job message change received!', payload);
-        fetchConversations();
-        
-        // If the message belongs to the current conversation, fetch new messages
-        if (currentConversation && 
-            currentConversation.conversationType === 'job' && 
-            payload.new && 
-            typeof payload.new === 'object' && 
-            'application_id' in payload.new && 
-            payload.new.application_id === currentConversation.conversationId) {
+            'conversation_item_id' in payload.new && 
+            'conversation_type' in payload.new &&
+            payload.new.conversation_item_id === currentConversation.conversationId &&
+            payload.new.conversation_type === currentConversation.conversationType) {
           fetchMessages(currentConversation);
         }
       })
@@ -202,14 +185,13 @@ export function useMessages() {
     }
 
     try {
-      // For marketplace items, create a conversation by sending the first message
+      // Use the new unified send_message function
       const { error } = await supabase
-        .from('marketplace_messages')
-        .insert({
-          product_id: itemId,
-          sender_id: user.id,
-          receiver_id: sellerId,
-          message: message
+        .rpc('send_message', {
+          p_sender_id: user.id,
+          p_conversation_id: itemId,
+          p_conversation_type: 'marketplace',
+          p_message: message
         });
 
       if (error) throw error;
