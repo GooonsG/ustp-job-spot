@@ -2,27 +2,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, MessageSquare, Send } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthProvider';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { format } from 'date-fns';
-import { NoMessagesState, LoadingIndicator, ErrorMessage } from '../dashboard/LoadingErrorStates';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthProvider';
+import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
+import { Send, MessageSquare } from 'lucide-react';
 
 interface MessageEmployerDialogProps {
   jobId: string;
   jobTitle: string;
   employerId: string;
-  trigger?: React.ReactNode;
-  applicationId?: string;
-}
-
-interface MessageFormValues {
-  message: string;
+  applicationId: string;
+  trigger: React.ReactNode;
 }
 
 interface Message {
@@ -34,52 +28,104 @@ interface Message {
   isSender: boolean;
 }
 
-// Type for the database response to better handle the conversion
-interface MessageResponse {
-  id: string;
-  sender_id: string;
-  sender_email: string;
-  message: string;
-  created_at: string;
-  is_sender: boolean;
-}
-
 export function MessageEmployerDialog({ 
   jobId, 
   jobTitle, 
   employerId, 
-  applicationId,
+  applicationId, 
   trigger 
 }: MessageEmployerDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentApplicationId, setCurrentApplicationId] = useState<string | undefined>(applicationId);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
   const { user } = useAuth();
-
-  const form = useForm<MessageFormValues>({
-    defaultValues: {
-      message: '',
-    },
-  });
-
-  // Fetch messages when dialog opens
-  useEffect(() => {
-    if (open && user) {
-      fetchMessages();
-    }
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const fetchMessages = async () => {
+    if (!user || !applicationId) return;
     
-    // Setup real-time subscription when dialog is open
-    if (open && currentApplicationId) {
-      const channel = supabase.channel('job-messages-changes')
+    setLoading(true);
+    
+    try {
+      console.log("Fetching job application messages for:", applicationId);
+      const { data, error } = await supabase
+        .rpc('get_conversation_messages', {
+          p_user_id: user.id,
+          p_conversation_id: applicationId,
+          p_conversation_type: 'job'
+        });
+
+      if (error) throw error;
+
+      if (data) {
+        console.log("Job application messages:", data);
+        const formattedMessages = data.map((msg: any) => ({
+          id: msg.id,
+          senderId: msg.sender_id,
+          senderEmail: msg.sender_email,
+          message: msg.message,
+          createdAt: msg.created_at,
+          isSender: msg.is_sender
+        }));
+
+        setMessages(formattedMessages);
+      }
+    } catch (err: any) {
+      console.error('Error fetching job application messages:', err);
+      toast({
+        title: "Error loading messages",
+        description: "There was a problem loading the conversation",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !user || !applicationId) return;
+    
+    try {
+      console.log("Sending job application message:", {
+        p_sender_id: user.id,
+        p_conversation_id: applicationId,
+        p_conversation_type: 'job',
+        p_message: newMessage
+      });
+      
+      const { error } = await supabase
+        .rpc('send_message', {
+          p_sender_id: user.id,
+          p_conversation_id: applicationId,
+          p_conversation_type: 'job',
+          p_message: newMessage
+        });
+
+      if (error) throw error;
+      
+      setNewMessage('');
+      await fetchMessages();
+    } catch (err: any) {
+      console.error('Error sending message:', err);
+      toast({
+        title: "Failed to send message",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
+  };
+  
+  useEffect(() => {
+    if (open) {
+      fetchMessages();
+      
+      const channel = supabase.channel('job-message-updates')
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'marketplace_messages',
-          filter: `conversation_item_id=eq.${currentApplicationId}`,
+          filter: `conversation_item_id=eq.${applicationId}`
         }, () => {
           fetchMessages();
         })
@@ -89,284 +135,103 @@ export function MessageEmployerDialog({
         supabase.removeChannel(channel);
       };
     }
-  }, [open, currentApplicationId, user]);
-
-  // Scroll to bottom when messages change
+  }, [open, applicationId, user]);
+  
   useEffect(() => {
-    if (messagesEndRef.current && messages.length > 0) {
+    if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
-
-  const fetchMessages = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      if (currentApplicationId) {
-        // If we already have an application ID, fetch messages directly
-        const { data, error: messagesError } = await supabase
-          .rpc('get_conversation_messages', {
-            p_user_id: user.id,
-            p_conversation_id: currentApplicationId,
-            p_conversation_type: 'job'
-          });
-
-        if (messagesError) throw messagesError;
-        
-        if (data) {
-          // Transform the data from snake_case to camelCase
-          const formattedMessages: Message[] = (data as MessageResponse[]).map(msg => ({
-            id: msg.id,
-            senderId: msg.sender_id,
-            senderEmail: msg.sender_email,
-            message: msg.message,
-            createdAt: msg.created_at,
-            isSender: msg.is_sender
-          }));
-          
-          setMessages(formattedMessages);
-        }
-      } else {
-        // Check if there's an existing application
-        const { data: applications, error: applicationError } = await supabase
-          .from('job_applications')
-          .select('id')
-          .eq('job_id', jobId)
-          .eq('applicant_id', user.id)
-          .limit(1);
-
-        if (applicationError) throw applicationError;
-
-        if (applications && applications.length > 0) {
-          setCurrentApplicationId(applications[0].id);
-          
-          // Now fetch messages for this application
-          const { data, error: messagesError } = await supabase
-            .rpc('get_conversation_messages', {
-              p_user_id: user.id,
-              p_conversation_id: applications[0].id,
-              p_conversation_type: 'job'
-            });
-
-          if (messagesError) throw messagesError;
-          
-          if (data) {
-            // Transform the data from snake_case to camelCase
-            const formattedMessages: Message[] = (data as MessageResponse[]).map(msg => ({
-              id: msg.id,
-              senderId: msg.sender_id,
-              senderEmail: msg.sender_email,
-              message: msg.message,
-              createdAt: msg.created_at,
-              isSender: msg.is_sender
-            }));
-            
-            setMessages(formattedMessages);
-          }
-        }
-      }
-    } catch (err: any) {
-      console.error('Error fetching messages:', err);
-      setError('Could not load messages. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onSubmit = async (values: MessageFormValues) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to send messages",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!values.message.trim()) return;
-
-    setIsSubmitting(true);
-    
-    try {
-      // If we have an application ID, we can send a message directly using the unified system
-      if (currentApplicationId) {
-        // Use the updated send_message function that handles both types
-        const { error } = await supabase
-          .rpc('send_message', {
-            p_sender_id: user.id,
-            p_conversation_id: currentApplicationId,
-            p_conversation_type: 'job',
-            p_message: values.message
-          });
-
-        if (error) throw error;
-      } else {
-        // No application ID, we need to create an application first
-        const { data: newApplication, error: newApplicationError } = await supabase
-          .from('job_applications')
-          .insert({
-            job_id: jobId,
-            applicant_id: user.id,
-            status: 'inquiry'
-          })
-          .select();
-
-        if (newApplicationError) throw newApplicationError;
-
-        if (newApplication && newApplication.length > 0) {
-          // Set the current application ID
-          setCurrentApplicationId(newApplication[0].id);
-          
-          // Now send the message using the unified function
-          const { error } = await supabase
-            .rpc('send_message', {
-              p_sender_id: user.id,
-              p_conversation_id: newApplication[0].id,
-              p_conversation_type: 'job',
-              p_message: values.message
-            });
-
-          if (error) throw error;
-        }
-      }
-
-      // Clear the form
-      form.reset();
-      
-      // Fetch the updated messages
-      fetchMessages();
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Failed to send message",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Format message time
-  const formatMessageTime = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const isToday = date.toDateString() === now.toDateString();
-      
-      if (isToday) {
-        return format(date, 'h:mm a');
-      } else {
-        return format(date, 'MMM d, h:mm a');
-      }
-    } catch (error) {
-      return '';
-    }
-  };
-
-  // Get the first character of email for avatar
-  const getAvatarFallback = (email: string | null | undefined) => {
+  
+  const getInitials = (email: string) => {
     if (!email) return '?';
-    return email.charAt(0).toUpperCase();
+    const name = email.split('@')[0];
+    return name.charAt(0).toUpperCase();
+  };
+  
+  const formatTimeAgo = (timestamp: string) => {
+    try {
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    } catch (error) {
+      return 'some time ago';
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline" size="sm">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Message
-          </Button>
-        )}
+        {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px] sm:max-h-[80vh] h-[550px] flex flex-col">
+      <DialogContent className="sm:max-w-[500px] h-[80vh] flex flex-col max-h-[600px]">
         <DialogHeader>
-          <DialogTitle>Messages about {jobTitle}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Messages about {jobTitle}
+          </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden mt-2">
-          <ScrollArea className="h-[350px] pr-4">
-            {loading && messages.length === 0 ? (
-              <LoadingIndicator />
-            ) : error ? (
-              <ErrorMessage message={error} />
-            ) : messages.length > 0 ? (
-              <div className="space-y-4 py-2">
-                {messages.map((message, index) => {
-                  const showAvatar = index === 0 || 
-                    (messages[index - 1] && messages[index - 1].senderId !== message.senderId);
-                  
-                  return (
+        <ScrollArea className="flex-1 pr-4 my-4">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <MessageSquare className="h-12 w-12 text-gray-300 mb-2" />
+              <p className="text-gray-500">No messages yet. Start the conversation!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div 
+                  key={message.id} 
+                  className={`flex ${message.isSender ? 'justify-end' : 'justify-start'}`}
+                >
+                  {!message.isSender && (
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarFallback>{getInitials(message.senderEmail)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div>
                     <div 
-                      key={message.id} 
-                      className={`flex ${message.isSender ? 'justify-end' : 'justify-start'}`}
+                      className={`px-3 py-2 rounded-lg max-w-xs ${
+                        message.isSender 
+                          ? 'bg-ustp-blue text-white ml-auto rounded-br-none' 
+                          : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                      }`}
                     >
-                      {!message.isSender && showAvatar && (
-                        <Avatar className="h-8 w-8 mr-2 mt-1 flex-shrink-0">
-                          <AvatarFallback>{getAvatarFallback(message.senderEmail)}</AvatarFallback>
-                        </Avatar>
-                      )}
-                      {!message.isSender && !showAvatar && (
-                        <div className="w-8 mr-2" />
-                      )}
-                      <div 
-                        className={`max-w-[80%] p-3 ${
-                          message.isSender 
-                            ? 'bg-ustp-blue text-white rounded-t-lg rounded-bl-lg' 
-                            : 'bg-gray-200 text-gray-800 rounded-t-lg rounded-br-lg'
-                        }`}
-                      >
-                        <p className="text-sm">{message.message}</p>
-                        <div className={`text-xs mt-1 text-right ${message.isSender ? 'text-blue-100' : 'text-gray-500'}`}>
-                          {formatMessageTime(message.createdAt)}
-                        </div>
-                      </div>
+                      <p className="break-words">{message.message}</p>
                     </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-            ) : (
-              <NoMessagesState message="No messages yet. Start the conversation!" />
-            )}
-          </ScrollArea>
-        </div>
+                    <p className={`text-xs mt-1 ${message.isSender ? 'text-right' : 'text-left'} text-gray-500`}>
+                      {formatTimeAgo(message.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </ScrollArea>
         
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
-          <div className="flex gap-2">
-            <Textarea
-              {...form.register('message')}
+        <div className="mt-auto">
+          <div className="flex space-x-2 items-center">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message..."
-              className="min-h-[80px] resize-none"
+              className="flex-1 rounded-full bg-gray-100 border-0 focus-visible:ring-ustp-blue px-4"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  form.handleSubmit(onSubmit)();
+                  sendMessage();
                 }
               }}
             />
-          </div>
-          
-          <div className="flex justify-end mt-4">
-            <Button type="submit" disabled={isSubmitting} className="bg-ustp-blue hover:bg-ustp-darkblue">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Message
-                </>
-              )}
+            <Button 
+              onClick={sendMessage}
+              disabled={!newMessage.trim()}
+              className="rounded-full bg-ustp-blue hover:bg-ustp-darkblue"
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

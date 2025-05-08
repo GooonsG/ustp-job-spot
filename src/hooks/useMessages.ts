@@ -44,12 +44,14 @@ export function useMessages() {
 
     const fetchConversations = async () => {
       try {
+        setLoading(true);
         const { data, error } = await supabase
           .rpc('get_user_messages', { p_user_id: user.id });
 
         if (error) throw error;
 
         if (data) {
+          console.log("Fetched conversations: ", data);
           const formattedConversations = data.map((conv: any) => ({
             id: conv.id,
             conversationId: conv.conversation_id,
@@ -111,6 +113,7 @@ export function useMessages() {
     setLoading(true);
     
     try {
+      console.log("Fetching messages for conversation:", conversation);
       const { data, error } = await supabase
         .rpc('get_conversation_messages', {
           p_user_id: user.id,
@@ -121,6 +124,7 @@ export function useMessages() {
       if (error) throw error;
 
       if (data) {
+        console.log("Fetched messages:", data);
         const formattedMessages = data.map((msg: any) => ({
           id: msg.id,
           senderId: msg.sender_id,
@@ -152,6 +156,13 @@ export function useMessages() {
     }
 
     try {
+      console.log("Sending message:", {
+        p_sender_id: user.id,
+        p_conversation_id: currentConversation.conversationId,
+        p_conversation_type: currentConversation.conversationType,
+        p_message: message
+      });
+      
       const { error } = await supabase
         .rpc('send_message', {
           p_sender_id: user.id,
@@ -185,6 +196,13 @@ export function useMessages() {
     }
 
     try {
+      console.log("Starting marketplace conversation:", {
+        p_sender_id: user.id,
+        p_conversation_id: itemId,
+        p_conversation_type: 'marketplace',
+        p_message: message
+      });
+      
       // Use the new unified send_message function
       const { error } = await supabase
         .rpc('send_message', {
