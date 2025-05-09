@@ -46,20 +46,13 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, open, o
     setIsSubmitting(true);
     
     try {
-      console.log("Sending marketplace message:", {
-        p_sender_id: user.id,
-        p_conversation_id: productId,
-        p_conversation_type: 'marketplace',
-        p_message: values.message
-      });
-      
-      // Use the unified send_message function for sending messages
       const { error } = await supabase
-        .rpc('send_message', {
-          p_sender_id: user.id,
-          p_conversation_id: productId,
-          p_conversation_type: 'marketplace',
-          p_message: values.message
+        .from('marketplace_messages')
+        .insert({
+          product_id: productId,
+          sender_id: user.id,
+          receiver_id: sellerId,
+          message: values.message
         });
 
       if (error) throw error;
@@ -150,4 +143,4 @@ export function MessageSellerDialog({ productId, productTitle, sellerId, open, o
       </DialogContent>
     </Dialog>
   );
-}
+};

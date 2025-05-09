@@ -174,36 +174,41 @@ export type Database = {
       }
       marketplace_messages: {
         Row: {
-          conversation_item_id: string
-          conversation_type: string
           created_at: string
           id: string
           message: string
+          product_id: string
           read_at: string | null
           receiver_id: string
           sender_id: string
         }
         Insert: {
-          conversation_item_id: string
-          conversation_type?: string
           created_at?: string
           id?: string
           message: string
+          product_id: string
           read_at?: string | null
           receiver_id: string
           sender_id: string
         }
         Update: {
-          conversation_item_id?: string
-          conversation_type?: string
           created_at?: string
           id?: string
           message?: string
+          product_id?: string
           read_at?: string | null
           receiver_id?: string
           sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

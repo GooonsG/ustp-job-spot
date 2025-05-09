@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthProvider';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
-import { Home, User, LogOut, MessageSquare, ShoppingCart, Briefcase } from 'lucide-react';
+import { Home, User, LogOut, Bell, MessageSquare, MailIcon, ShoppingCart, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,19 +29,12 @@ export default function NavbarUser() {
     // Fetch unread messages count
     const fetchUnreadMessages = async () => {
       try {
-        console.log("Fetching unread messages count for user:", user.id);
         const { data, error } = await supabase.rpc('get_user_messages', {
           p_user_id: user.id
         });
 
-        if (error) {
-          console.error("Error fetching unread count:", error);
-          return;
-        }
-
-        if (data) {
-          console.log("Unread messages data:", data);
-          const count = data.reduce((total: number, conv: any) => total + (conv.unread_count || 0), 0);
+        if (!error && data) {
+          const count = data.reduce((total: number, conv: any) => total + conv.unread_count, 0);
           setUnreadCount(count);
         }
       } catch (err) {
@@ -51,12 +44,17 @@ export default function NavbarUser() {
 
     fetchUnreadMessages();
 
-    // Setup realtime subscription for the unified messages table
+    // Setup realtime subscription for messages
     const channel = supabase.channel('messages-badge-updates')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'marketplace_messages'
+      }, () => fetchUnreadMessages())
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'job_messages'
       }, () => fetchUnreadMessages())
       .subscribe();
 
